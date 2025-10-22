@@ -1,82 +1,67 @@
 import { DeleteButton } from '@emporium/ui';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { Button, Col, Row, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomSettingsComponent extends React.Component<any, any> {
-    public state: any = {};
+interface CustomSettingsProps {}
 
-    public initState(): void {}
+export const CustomSettings = ({}: CustomSettingsProps) => {
+    const customSettings = useSelector((state: any) => state.customSettings);
+    const [name, setName] = useState('');
 
-    public UNSAFE_componentWillMount = () => this.initState();
+    const initState = useCallback(() => {
+        setName('');
+    }, []);
 
-    public handleSubmit = event => {
-        this.initState();
+    const handleSubmit = useCallback((event: React.MouseEvent) => {
+        initState();
         event.preventDefault();
-    };
+    }, [initState]);
 
-    public handleDelete = event => {
+    const handleDelete = useCallback((event: React.MouseEvent) => {
         event.preventDefault();
-    };
+    }, []);
 
-    public render() {
-        const { customSettings } = this.props;
-        const { name } = this.state;
-        return (
-            <div>
-                <Fragment
-                    type="name"
-                    value={name}
-                    handleChange={event =>
-                        this.setState({ name: event.target.value })
-                    }
-                />
-                <Row className="my-4 justify-content-end">
-                    <Button onClick={this.handleSubmit} className="btn">
-                        ADD
-                    </Button>
-                </Row>
-                <Row>
-                    <Col sm="6">
-                        <Table>
-                            <thead>
-                                <tr>
-                                    <th>CUSTOM SETTINGS</th>
-                                    <th />
+    return (
+        <div>
+            <Fragment
+                type="name"
+                value={name}
+                handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setName(event.target.value)
+                }
+            />
+            <Row className="my-4 justify-content-end">
+                <Button onClick={handleSubmit} className="btn">
+                    ADD
+                </Button>
+            </Row>
+            <Row>
+                <Col sm="6">
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>CUSTOM SETTINGS</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.keys(customSettings).map(key => (
+                                <tr key={key}>
+                                    <td>{customSettings[key]}</td>
+                                    <td>
+                                        <DeleteButton
+                                            name={key}
+                                            onClick={handleDelete}
+                                        />
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {Object.keys(customSettings).map(key => (
-                                    <tr key={key}>
-                                        <td>{customSettings[key]}</td>
-                                        <td>
-                                            <DeleteButton
-                                                name={key}
-                                                onClick={this.handleDelete}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    </Col>
-                </Row>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        customSettings: state.customSettings
-    };
+                            ))}
+                        </tbody>
+                    </Table>
+                </Col>
+            </Row>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch => bindActionCreators({}, dispatch);
-
-export const CustomSettings = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomSettingsComponent);

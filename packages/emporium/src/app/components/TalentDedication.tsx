@@ -1,75 +1,63 @@
 import { changeData } from '@emporium/actions';
 import { characteristics } from '@emporium/selectors';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { Input, Row } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 
-class TalentDedicationComponent extends React.Component<any, any> {
-    public state = { options: [] };
+interface TalentDedicationProps {
+    row: number;
+    selection: string;
+    handleDedicationChange: (value: string) => void;
+}
 
-    public UNSAFE_componentWillMount() {
-        const { characteristics, talentModifiers, row } = this.props;
-        const options = [];
-        Object.keys(characteristics).forEach(characteristic => {
+export const TalentDedication = ({ row, selection, handleDedicationChange }: TalentDedicationProps) => {
+    const characteristicsValue = useSelector((state: any) => characteristics(state));
+    const talentModifiers = useSelector((state: any) => state.talentModifiers);
+
+    const options = useMemo(() => {
+        const opts: string[] = [];
+        Object.keys(characteristicsValue).forEach(characteristic => {
             if (
-                5 > characteristics[characteristic] &&
+                5 > characteristicsValue[characteristic] &&
                 !Object.values(talentModifiers.Dedication).includes(
                     characteristic
                 )
             ) {
-                options.push(characteristic);
+                opts.push(characteristic);
             }
         });
         talentModifiers.Dedication[row] &&
-            options.push(talentModifiers.Dedication[row]);
-        options.sort();
-        this.setState({ options: options });
-    }
+            opts.push(talentModifiers.Dedication[row]);
+        opts.sort();
+        return opts;
+    }, [characteristicsValue, talentModifiers, row]);
 
-    public componentWillUnmount() {
-        this.props.handleDedicationChange('');
-    }
+    useEffect(() => {
+        return () => {
+            handleDedicationChange('');
+        };
+    }, [handleDedicationChange]);
 
-    public handleChange = event => {
-        this.props.handleDedicationChange(event.target.value);
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        handleDedicationChange(event.target.value);
         event.preventDefault();
-    };
+    }, [handleDedicationChange]);
 
-    public render() {
-        const { options } = this.state;
-        const { selection } = this.props;
-        return (
-            <Row>
-                <b>Select a characteristic to increase:</b>
-                <Input
-                    type="select"
-                    value={selection}
-                    onChange={this.handleChange}
-                >
-                    <option value="" />
-                    {options.map(key => (
-                        <option value={key} key={key}>
-                            {key}
-                        </option>
-                    ))}
-                </Input>
-            </Row>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        characteristics: characteristics(state),
-        talentModifiers: state.talentModifiers
-    };
+    return (
+        <Row>
+            <b>Select a characteristic to increase:</b>
+            <Input
+                type="select"
+                value={selection}
+                onChange={handleChange}
+            >
+                <option value="" />
+                {options.map(key => (
+                    <option value={key} key={key}>
+                        {key}
+                    </option>
+                ))}
+            </Input>
+        </Row>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeData }, dispatch);
-
-export const TalentDedication = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(TalentDedicationComponent);

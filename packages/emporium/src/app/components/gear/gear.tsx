@@ -1,9 +1,9 @@
 import { changeData } from '@emporium/actions';
 import { books } from '@emporium/data-lists';
 import clone from 'clone';
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
     Button,
     Modal,
@@ -13,48 +13,48 @@ import {
     Row,
     Table
 } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import './gear.scss';
 
-class GearComponent extends React.Component<
-    any,
-    {
-        gearFilter: string;
-        bookFilter: string[];
-        selected: boolean;
-        restrictToSetting: boolean;
-    }
-> {
-    public state = {
-        selected: false,
-        gearFilter: '',
-        bookFilter: [],
-        restrictToSetting: false
-    };
+interface GearProps {
+    type: string;
+    modal: boolean;
+    handleClose: () => void;
+}
 
-    public handleAdd = (event): void => {
-        const { type, changeData } = this.props;
-        const obj = { ...this.props[type] };
+export const Gear = ({ type, modal, handleClose }: GearProps) => {
+    const [gearFilter, setGearFilter] = useState('');
+    const [bookFilter, setBookFilter] = useState<string[]>([]);
+    const [restrictToSetting, setRestrictToSetting] = useState(false);
+
+    const armor = useSelector((state: any) => state.armor);
+    const weapons = useSelector((state: any) => state.weapons);
+    const gear = useSelector((state: any) => state.gear);
+    const skills = useSelector((state: any) => state.skills);
+    const equipmentArmor = useSelector((state: any) => state.equipmentArmor);
+    const equipmentGear = useSelector((state: any) => state.equipmentGear);
+    const equipmentWeapons = useSelector((state: any) => state.equipmentWeapons);
+    const theme = useSelector((state: any) => state.theme);
+    const setting = useSelector((state: any) => state.setting);
+    const dispatch = useDispatch();
+
+    const currentEquipment = useSelector((state: any) => state[type]);
+
+    const handleAdd = useCallback((event: React.MouseEvent<HTMLButtonElement>): void => {
+        const obj = { ...currentEquipment };
         const key = Math.random().toString(36).substr(2, 16);
-        obj[key] = { id: event.target.name, carried: true, equipped: false };
-        changeData(obj, `${type}`);
-        this.handleClose();
+        obj[key] = { id: (event.target as HTMLButtonElement).name, carried: true, equipped: false };
+        dispatch(changeData(obj, `${type}`));
+        handleCloseModal();
         event.preventDefault();
-    };
+    }, [currentEquipment, type, dispatch]);
 
-    public handleSelect = event => {
-        this.setState({ selected: event.target.value });
-        event.preventDefault();
-    };
+    const handleCloseModal = useCallback(() => {
+        setGearFilter('');
+        setBookFilter([]);
+        handleClose();
+    }, [handleClose]);
 
-    public handleClose = () => {
-        this.setState({ gearFilter: '', bookFilter: [] });
-        this.props.handleClose();
-    };
-
-    public generateEquipmentTableHeader = () => {
-        const { type } = this.props;
-
+    const generateEquipmentTableHeader = useCallback(() => {
         switch (type) {
             case 'equipmentWeapons':
                 return (
@@ -89,23 +89,20 @@ class GearComponent extends React.Component<
             default:
                 break;
         }
-    };
+    }, [type]);
 
-    public handleSettingRestrictionChange = (event): void => {
+    const handleSettingRestrictionChange = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
         const value = event.target.checked;
-        this.setState({
-            restrictToSetting: !!value
-        });
-    };
+        setRestrictToSetting(!!value);
+    }, []);
 
-    public filterItem(
+    const filterItem = useCallback((
         item: string,
         filter: string,
-        bookFilter: string[],
-        restrictToSetting: boolean
-    ): boolean {
-        const { weapons, armor, gear, skills, type } = this.props;
-        if (!filter && !bookFilter) {
+        bookFilterList: string[],
+        restrictToSettingFlag: boolean
+    ): boolean => {
+        if (!filter && !bookFilterList) {
             return true;
         }
 
@@ -135,9 +132,9 @@ class GearComponent extends React.Component<
             }
         }
 
-        if (bookFilter.length && bookFilter.indexOf('All') === -1) {
+        if (bookFilterList.length && bookFilterList.indexOf('All') === -1) {
             const passes =
-                bookFilter
+                bookFilterList
                     .map(x => x?.toLowerCase())
                     .indexOf(selectedItem?.book?.toLowerCase()) !== -1;
 
@@ -146,9 +143,8 @@ class GearComponent extends React.Component<
             }
         }
 
-        const { setting } = this.props;
         if (
-            restrictToSetting &&
+            restrictToSettingFlag &&
             setting.length > 0 &&
             setting.indexOf('All') === -1
         ) {
@@ -166,10 +162,9 @@ class GearComponent extends React.Component<
         }
 
         return true;
-    }
+    }, [type, weapons, armor, gear, setting]);
 
-    public generateEquipmentTableBody = (item: string) => {
-        const { weapons, armor, gear, skills, type } = this.props;
+    const generateEquipmentTableBody = useCallback((item: string) => {
         switch (type) {
             case 'equipmentWeapons':
                 return (
@@ -178,7 +173,7 @@ class GearComponent extends React.Component<
                             <Button
                                 color="secondary"
                                 name={item}
-                                onClick={this.handleAdd}
+                                onClick={handleAdd}
                             >
                                 +
                             </Button>
@@ -203,7 +198,7 @@ class GearComponent extends React.Component<
                             <Button
                                 color="secondary"
                                 name={item}
-                                onClick={this.handleAdd}
+                                onClick={handleAdd}
                             >
                                 +
                             </Button>
@@ -221,7 +216,7 @@ class GearComponent extends React.Component<
                             <Button
                                 color="secondary"
                                 name={item}
-                                onClick={this.handleAdd}
+                                onClick={handleAdd}
                             >
                                 +
                             </Button>
@@ -234,133 +229,103 @@ class GearComponent extends React.Component<
             default:
                 break;
         }
-    };
+    }, [type, weapons, armor, gear, skills, handleAdd]);
 
-    public handleFilterChange(event): void {
+    const handleFilterChange = useCallback((event: React.ChangeEvent<HTMLInputElement>): void => {
         const filterValue = (event?.target?.value || '')
             .trim()
             .toLowerCase()
             .replace(/ /g, '');
 
-        this.setState({
-            gearFilter: filterValue
-        });
-    }
+        setGearFilter(filterValue);
+    }, []);
 
-    public render() {
-        const { type, modal, weapons, armor, gear, theme } = this.props;
-        let data;
+    const data = useMemo(() => {
         switch (type) {
             case 'equipmentWeapons':
-                data = clone(weapons);
-                break;
+                return clone(weapons);
             case 'equipmentArmor':
-                data = clone(armor);
-                break;
+                return clone(armor);
             case 'equipmentGear':
-                data = clone(gear);
-                break;
+                return clone(gear);
             default:
-                break;
+                return null;
         }
+    }, [type, weapons, armor, gear]);
 
-        return (
-            <Modal
-                className={`body-${theme} gear-modal`}
-                isOpen={!!modal}
-                toggle={this.handleClose}
-            >
-                <ModalHeader toggle={this.handleClose}>
-                    Select your {type.toString().slice(9)}
-                </ModalHeader>
-                <ModalBody className="m-1">
-                    <div>
-                        <input
-                            className="item-filter"
-                            type="text"
-                            placeholder="Name Filter"
-                            onChange={this.handleFilterChange.bind(this)}
-                        />
-                        <Typeahead
-                            id={`settingChooser`}
-                            multiple={true}
-                            options={books}
-                            placeholder="Book Filter"
-                            clearButton={true}
-                            onChange={selected =>
-                                this.setState({
-                                    bookFilter: selected.includes('All')
-                                        ? ['All']
-                                        : selected
-                                })
-                            }
-                        />
-                    </div>
-                    <Row className="table-container">
-                        <Table>
-                            <thead>{this.generateEquipmentTableHeader()}</thead>
-                            <tbody>
-                                {data &&
-                                    Object.keys(data)
-                                        .sort()
-                                        .filter(item =>
-                                            this.filterItem(
-                                                item,
-                                                this.state?.gearFilter,
-                                                this.state?.bookFilter,
-                                                this.state?.restrictToSetting
-                                            )
+    return (
+        <Modal
+            className={`body-${theme} gear-modal`}
+            isOpen={!!modal}
+            toggle={handleCloseModal}
+        >
+            <ModalHeader toggle={handleCloseModal}>
+                Select your {type.toString().slice(9)}
+            </ModalHeader>
+            <ModalBody className="m-1">
+                <div>
+                    <input
+                        className="item-filter"
+                        type="text"
+                        placeholder="Name Filter"
+                        onChange={handleFilterChange}
+                    />
+                    <Typeahead
+                        id={`settingChooser`}
+                        multiple={true}
+                        options={books}
+                        placeholder="Book Filter"
+                        clearButton={true}
+                        onChange={selected =>
+                            setBookFilter(
+                                selected.includes('All')
+                                    ? ['All']
+                                    : selected
+                            )
+                        }
+                    />
+                </div>
+                <Row className="table-container">
+                    <Table>
+                        <thead>{generateEquipmentTableHeader()}</thead>
+                        <tbody>
+                            {data &&
+                                Object.keys(data)
+                                    .sort()
+                                    .filter(item =>
+                                        filterItem(
+                                            item,
+                                            gearFilter,
+                                            bookFilter,
+                                            restrictToSetting
                                         )
-                                        .map(item =>
-                                            this.generateEquipmentTableBody(
-                                                item
-                                            )
-                                        )}
-                            </tbody>
-                        </Table>
-                    </Row>
-                </ModalBody>
-                <ModalFooter>
-                    <span
-                        className="settings-restriction"
-                        title="By enabling this, you restrict options to only those found in your selected settings"
-                    >
-                        <label htmlFor="settingsRestriction">
-                            Restrict to Settings
-                        </label>
-                        <input
-                            id="settingsRestriction"
-                            type="checkbox"
-                            checked={this.state.restrictToSetting}
-                            onChange={this.handleSettingRestrictionChange}
-                        />
-                    </span>
-                    <Button onClick={this.handleClose}>Close</Button>
-                </ModalFooter>
-            </Modal>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        armor: state.armor,
-        weapons: state.weapons,
-        gear: state.gear,
-        qualities: state.qualities,
-        skills: state.skills,
-        equipmentArmor: state.equipmentArmor,
-        equipmentGear: state.equipmentGear,
-        equipmentWeapons: state.equipmentWeapons,
-        theme: state.theme,
-        setting: state.setting
-    };
+                                    )
+                                    .map(item =>
+                                        generateEquipmentTableBody(
+                                            item
+                                        )
+                                    )}
+                        </tbody>
+                    </Table>
+                </Row>
+            </ModalBody>
+            <ModalFooter>
+                <span
+                    className="settings-restriction"
+                    title="By enabling this, you restrict options to only those found in your selected settings"
+                >
+                    <label htmlFor="settingsRestriction">
+                        Restrict to Settings
+                    </label>
+                    <input
+                        id="settingsRestriction"
+                        type="checkbox"
+                        checked={restrictToSetting}
+                        onChange={handleSettingRestrictionChange}
+                    />
+                </span>
+                <Button onClick={handleCloseModal}>Close</Button>
+            </ModalFooter>
+        </Modal>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeData }, dispatch);
-
-export const Gear = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(GearComponent);

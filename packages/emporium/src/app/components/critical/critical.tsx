@@ -1,127 +1,111 @@
 import { changeData } from '@emporium/actions';
 import { criticalText } from '@emporium/selectors';
 import { DeleteButton } from '@emporium/ui';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Button, Input, Row, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Description } from '../Description';
 import './critical.scss';
 
-class CriticalComponent extends React.Component<any, any> {
-    public state = { value: null, modal: false };
+interface CriticalProps {}
 
-    public handleSubmit = event => {
-        const newArr = [...this.props.critical];
-        const value = this.state.value;
+export const Critical = ({}: CriticalProps) => {
+    const [value, setValue] = useState<number | null>(null);
+
+    const critical = useSelector((state: any) => state.critical);
+    const theme = useSelector((state: any) => state.theme);
+    const dispatch = useDispatch();
+
+    const handleSubmit = useCallback((event: React.FormEvent) => {
+        const newArr = [...critical];
         if (value != null && value > 0) {
             newArr.push(value);
-            this.props.changeData(newArr, 'critical');
+            dispatch(changeData(newArr, 'critical'));
         }
 
-        this.setState({ value: null });
+        setValue(null);
         event.preventDefault();
-    };
+    }, [critical, value, dispatch]);
 
-    public handleChange = event => {
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const radix = 10;
         const inputValue = event.target.value;
         if (inputValue) {
             const number = parseInt(inputValue.replace(/\D+/g, ''), radix);
             if (!isNaN(number) && number <= 999) {
-                this.setState({ value: number });
+                setValue(number);
             }
         } else {
-            this.setState({ value: null });
+            setValue(null);
         }
 
         event.preventDefault();
-    };
+    }, []);
 
-    public handleDelete = event => {
-        const newArr = [...this.props.critical];
-        newArr.splice(event.target.value, 1);
-        this.props.changeData(newArr, 'critical');
-        this.setState({ modal: false });
-    };
+    const handleDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const newArr = [...critical];
+        newArr.splice(Number((event.target as HTMLButtonElement).value), 1);
+        dispatch(changeData(newArr, 'critical'));
+    }, [critical, dispatch]);
 
-    public criticalInputKeypress = (event): void => {
+    const criticalInputKeypress = useCallback((event: React.KeyboardEvent): void => {
         if (event.key === 'Enter') {
-            this.handleSubmit(event);
+            handleSubmit(event as any);
         }
-    };
+    }, [handleSubmit]);
 
-    public render() {
-        const { value } = this.state;
-        const { critical, theme } = this.props;
-        return (
-            <div className="critical-container">
-                <Row className="justify-content-end">
-                    <div className={`header header-${theme}`}>
-                        CRITICAL INJURES
-                    </div>
-                </Row>
-                <hr />
-                <Table className="bg-light">
-                    <thead>
-                        <tr>
-                            <th>CRITICAL</th>
-                            <th>DESCRIPTION</th>
-                            <th />
+    return (
+        <div className="critical-container">
+            <Row className="justify-content-end">
+                <div className={`header header-${theme}`}>
+                    CRITICAL INJURES
+                </div>
+            </Row>
+            <hr />
+            <Table className="bg-light">
+                <thead>
+                    <tr>
+                        <th>CRITICAL</th>
+                        <th>DESCRIPTION</th>
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {critical.map((critRoll, index) => (
+                        <tr className="my-2" key={index}>
+                            <td>
+                                <b>{critRoll}:</b>
+                            </td>
+                            <td>
+                                <Description
+                                    text={criticalText(critRoll)}
+                                />
+                            </td>
+                            <td>
+                                <DeleteButton
+                                    value={index}
+                                    onClick={handleDelete}
+                                />
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {critical.map((critRoll, index) => (
-                            <tr className="my-2" key={index}>
-                                <td>
-                                    <b>{critRoll}:</b>
-                                </td>
-                                <td>
-                                    <Description
-                                        text={criticalText(critRoll)}
-                                    />
-                                </td>
-                                <td>
-                                    <DeleteButton
-                                        value={index}
-                                        onClick={this.handleDelete}
-                                    />
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-                <Row className="my-2 justify-content-end">
-                    <b className="my-auto">Add Critical:</b>
-                    <Input
-                        className="w-20 mx-2"
-                        bsSize="sm"
-                        type="number"
-                        name="critical"
-                        value={value != null ? value : ''}
-                        onKeyPress={this.criticalInputKeypress}
-                        onChange={this.handleChange}
-                    />
-                    <Button size="sm" onClick={this.handleSubmit}>
-                        Add
-                    </Button>
-                </Row>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        critical: state.critical,
-        theme: state.theme
-    };
+                    ))}
+                </tbody>
+            </Table>
+            <Row className="my-2 justify-content-end">
+                <b className="my-auto">Add Critical:</b>
+                <Input
+                    className="w-20 mx-2"
+                    bsSize="sm"
+                    type="number"
+                    name="critical"
+                    value={value != null ? value : ''}
+                    onKeyPress={criticalInputKeypress}
+                    onChange={handleChange}
+                />
+                <Button size="sm" onClick={handleSubmit}>
+                    Add
+                </Button>
+            </Row>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeData }, dispatch);
-
-export const Critical = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CriticalComponent);

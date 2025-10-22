@@ -1,48 +1,41 @@
 import * as images from '@emporium/images';
 import { totalXP, usedXP } from '@emporium/selectors';
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Row } from 'reactstrap';
 
-class Component extends React.Component<any> {
-    public render(): React.ReactNode {
-        const { totalXP, usedXP, theme } = this.props;
-        return (
-            <div className="break-after">
-                <Row className="justify-content-between">
-                    <div className={`imageBox xpBox totalXp`}>
-                        <img
-                            src={images[theme].TotalXp}
-                            alt=""
-                            className="svg"
-                        />
-                        <Row className={`xpValue xpValue-${theme}`}>
-                            {totalXP}
-                        </Row>
-                    </div>
+interface XPProps {}
 
-                    <div className={`imageBox xpBox availableXP availableXP`}>
-                        <img
-                            src={images[theme].AvailableXp}
-                            alt=""
-                            className="svg"
-                        />
-                        <Row className={`xpValue xpValue-${theme}`}>
-                            {totalXP - usedXP}
-                        </Row>
-                    </div>
-                </Row>
-            </div>
-        );
-    }
-}
+export const XP = ({}: XPProps) => {
+    const totalXPSelector = useSelector((state: any) => totalXP(state));
+    const usedXPSelector = useSelector((state: any) => usedXP(state));
+    const theme = useSelector((state: any) => state.theme);
 
-const mapStateToProps = state => {
-    return {
-        totalXP: totalXP(state),
-        usedXP: usedXP(state),
-        theme: state.theme
-    };
+    return (
+        <div className="break-after">
+            <Row className="justify-content-between">
+                <div className={`imageBox xpBox totalXp`}>
+                    <img
+                        src={images[theme].TotalXp}
+                        alt=""
+                        className="svg"
+                    />
+                    <Row className={`xpValue xpValue-${theme}`}>
+                        {totalXPSelector}
+                    </Row>
+                </div>
+
+                <div className={`imageBox xpBox availableXP availableXP`}>
+                    <img
+                        src={images[theme].AvailableXp}
+                        alt=""
+                        className="svg"
+                    />
+                    <Row className={`xpValue xpValue-${theme}`}>
+                        {totalXPSelector - usedXPSelector}
+                    </Row>
+                </div>
+            </Row>
+        </div>
+    );
 };
-
-export const XP = connect(mapStateToProps)(Component);

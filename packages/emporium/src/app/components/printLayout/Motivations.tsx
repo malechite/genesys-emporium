@@ -1,38 +1,31 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Row } from 'reactstrap';
 
-class Component extends React.Component<any> {
-    public render(): React.ReactNode {
-        const { masterMotivations, theme } = this.props;
-        return (
-            <div>
-                <Row className="justify-content-end">
-                    <div className={`header header-${theme}`}>MOTIVATIONS</div>
+interface MotivationsProps {}
+
+export const Motivations = ({}: MotivationsProps) => {
+    const masterMotivations = useSelector((state: any) => state.masterMotivations);
+    const motivations = useSelector((state: any) => state.motivations);
+    const theme = useSelector((state: any) => state.theme);
+
+    return (
+        <div>
+            <Row className="justify-content-end">
+                <div className={`header header-${theme}`}>MOTIVATIONS</div>
+            </Row>
+            <hr />
+            {['Strength', 'Flaw', 'Desire', 'Fear'].map(type => (
+                <Row className="justify-content-left" key={type}>
+                    <b>{type.toUpperCase()}</b>
+                    {masterMotivations[type] && (
+                        <p>
+                            <i>{masterMotivations[type].key}</i>:{' '}
+                            {masterMotivations[type].description}
+                        </p>
+                    )}
                 </Row>
-                <hr />
-                {['Strength', 'Flaw', 'Desire', 'Fear'].map(type => (
-                    <Row className="justify-content-left" key={type}>
-                        <b>{type.toUpperCase()}</b>
-                        {masterMotivations[type] && (
-                            <p>
-                                <i>{masterMotivations[type].key}</i>:{' '}
-                                {masterMotivations[type].description}
-                            </p>
-                        )}
-                    </Row>
-                ))}
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        masterMotivations: state.masterMotivations,
-        motivations: state.motivations,
-        theme: state.theme
-    };
+            ))}
+        </div>
+    );
 };
-
-export const Motivations = connect(mapStateToProps)(Component);

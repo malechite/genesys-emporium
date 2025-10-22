@@ -1,14 +1,16 @@
 import { firebase } from '@firebase/app';
 import '@firebase/auth';
 import * as firebaseui from "firebaseui";
-import React, { Component } from 'react';
+import React, { useMemo } from 'react';
 import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 import { Container, Row } from 'reactstrap';
 import * as images from '@emporium/images';
 import { About } from './About';
 
-export class User extends Component<any, any> {
-    public uiConfig: any = {
+interface UserProps {}
+
+export const User = ({}: UserProps) => {
+    const uiConfig = useMemo(() => ({
         signInFlow: 'popup',
         autoUpgradeAnonymousUsers: true,
         callbacks: {
@@ -29,37 +31,35 @@ export class User extends Component<any, any> {
             firebase.auth.EmailAuthProvider.PROVIDER_ID,
             firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
         ]
-    };
+    }), []);
 
-    public render() {
-        return (
-            <div>
-                <Container className="container-fluid my-4">
-                    <div className={`bg bg-CRB d-print-none`} />
-                    <Row className="justify-content-center">
-                        <h1>Genesys Emporium</h1>
-                    </Row>
-                    <Row className="justify-content-center">
-                        <h2>Genesys Character Creator</h2>
-                    </Row>
-                    <Row className="justify-content-center my-4">
-                        <img
-                            src={images.CRB.Logo}
-                            alt=""
-                            style={{ maxHeight: '150px' }}
-                        />
-                    </Row>
-                    <Row className="justify-content-center my-2">
-                        <StyledFirebaseAuth
-                            uiConfig={this.uiConfig}
-                            firebaseAuth={firebase.auth()}
-                        />
-                    </Row>
-                    <Row className="justify-content-center">
-                        <About />
-                    </Row>
-                </Container>
-            </div>
-        );
-    }
-}
+    return (
+        <div>
+            <Container className="container-fluid my-4">
+                <div className={`bg bg-CRB d-print-none`} />
+                <Row className="justify-content-center">
+                    <h1>Genesys Emporium</h1>
+                </Row>
+                <Row className="justify-content-center">
+                    <h2>Genesys Character Creator</h2>
+                </Row>
+                <Row className="justify-content-center my-4">
+                    <img
+                        src={images.CRB.Logo}
+                        alt=""
+                        style={{ maxHeight: '150px' }}
+                    />
+                </Row>
+                <Row className="justify-content-center my-2">
+                    <StyledFirebaseAuth
+                        uiConfig={uiConfig}
+                        firebaseAuth={firebase.auth()}
+                    />
+                </Row>
+                <Row className="justify-content-center">
+                    <About />
+                </Row>
+            </Container>
+        </div>
+    );
+};

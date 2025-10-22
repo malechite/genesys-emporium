@@ -2,70 +2,89 @@ import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { chars, diceNames, modifiableAttributes } from '@emporium/data-lists';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
 import clone from 'clone';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Col, Row, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomEquipmentComponent extends React.Component<any, any> {
-    public state: any = {};
+interface CustomEquipmentProps {
+    type: string;
+    handleClose: () => void;
+}
 
-    public UNSAFE_componentWillMount = () => this.initState();
+const initialState = {
+    name: '',
+    damage: '',
+    range: '',
+    skill: 'All',
+    critical: '',
+    encumbrance: '',
+    price: '',
+    soak: '',
+    defense: '',
+    setting: [],
+    meleeDefense: '',
+    rangedDefense: '',
+    qualityRank: '',
+    description: '',
+    specialQualities: '',
+    strainThreshold: 0,
+    qualityList: {},
+    modifier: false,
+    modifierValue: '',
+    mode: 'add'
+};
 
-    public initState = () => {
-        this.setState({
-            name: '',
-            damage: '',
-            range: '',
-            skill: 'All',
-            critical: '',
-            encumbrance: '',
-            price: '',
-            soak: '',
-            defense: '',
-            setting: [],
-            meleeDefense: '',
-            rangedDefense: '',
-            qualityRank: '',
-            description: '',
-            specialQualities: '',
-            strainThreshold: 0,
-            qualityList: {},
-            modifier: false,
-            modifierValue: '',
-            mode: 'add'
-        });
-    };
+export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => {
+    const dispatch = useDispatch();
+    const skills = useSelector((state: any) => state.skills);
+    const qualities = useSelector((state: any) => state.qualities);
+    const customWeapons = useSelector((state: any) => state.customWeapons);
+    const customGear = useSelector((state: any) => state.customGear);
+    const customArmor = useSelector((state: any) => state.customArmor);
 
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
+    const [state, setState] = useState<any>(initialState);
 
-    public handleChange = event => {
-        this.setState({ [event.target.name]: event.target.value });
+    const {
+        modifier,
+        modifierValue,
+        specialQualities,
+        qualityList,
+        qualityRank,
+        strainThreshold
+    } = state;
+
+    const initState = useCallback(() => {
+        setState(initialState);
+    }, []);
+
+    const handleCloseWrapper = useCallback(() => {
+        initState();
+        handleClose();
+    }, [initState, handleClose]);
+
+    const handleChange = useCallback((event: any) => {
+        setState((prev: any) => ({ ...prev, [event.target.name]: event.target.value }));
         event.preventDefault();
-    };
+    }, []);
 
-    public handleAddQuality = () => {
+    const handleAddQuality = useCallback(() => {
         const data = {
-            ...clone(this.state.qualityList),
-            [this.state.specialQualities]: this.state.qualityRank
-                ? +this.state.qualityRank
+            ...clone(state.qualityList),
+            [state.specialQualities]: state.qualityRank
+                ? +state.qualityRank
                 : ''
         };
 
-        this.setState({
+        setState((prev: any) => ({
+            ...prev,
             qualityList: data,
             specialQualities: '',
             qualityRank: ''
-        });
-    };
+        }));
+    }, [state.qualityList, state.specialQualities, state.qualityRank]);
 
-    public handleSubmit = () => {
-        const { type } = this.props;
-        // noinspection JSUnusedLocalSymbols
+    const handleSubmit = useCallback(() => {
         const {
             range,
             damage,
@@ -83,7 +102,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
             specialQualities,
             strainThreshold,
             ...rest
-        } = this.state;
+        } = state;
 
         console.log('Mod:', mod);
 
@@ -129,35 +148,36 @@ class CustomEquipmentComponent extends React.Component<any, any> {
         }
 
         if (mode === 'add') {
-            this.props.addDataSet(type, data);
+            dispatch(addDataSet(type, data));
         } else if (mode === 'edit') {
-            this.props.modifyDataSet(type, data);
+            dispatch(modifyDataSet(type, data));
         }
 
-        this.initState();
-    };
+        initState();
+    }, [state, type, dispatch, initState]);
 
-    public handleDuplicate = event => {
-        const type = event.target.getAttribute('type');
-        // @ts-ignore
-        const { id, ...data } = { ...this.props[type][event.target.name] };
-        this.props.addDataSet(type, { ...data, name: `${data.name} (copy)` });
+    const handleDuplicate = useCallback((event: any) => {
+        const equipmentType = event.target.getAttribute('type');
+        const equipment = { customWeapons, customGear, customArmor }[equipmentType];
+        const { id, ...data } = { ...equipment[event.target.name] };
+        dispatch(addDataSet(equipmentType, { ...data, name: `${data.name} (copy)` }));
         event.preventDefault();
-    };
+    }, [customWeapons, customGear, customArmor, dispatch]);
 
-    public handleDelete = event => {
-        const type = event.target.getAttribute('type');
-        this.props.removeDataSet(type, this.props[type][event.target.name].id);
+    const handleDelete = useCallback((event: any) => {
+        const equipmentType = event.target.getAttribute('type');
+        const equipment = { customWeapons, customGear, customArmor }[equipmentType];
+        dispatch(removeDataSet(equipmentType, equipment[event.target.name].id));
         event.preventDefault();
-    };
+    }, [customWeapons, customGear, customArmor, dispatch]);
 
-    public handleEdit = event => {
+    const handleEdit = useCallback((event: any) => {
         event.preventDefault();
-        const equipment = this.props[event.target.getAttribute('type')][
-            event.target.name
-        ];
+        const equipmentType = event.target.getAttribute('type');
+        const equipmentMap = { customWeapons, customGear, customArmor };
+        const equipment = equipmentMap[equipmentType][event.target.name];
 
-        this.setState({
+        setState({
             ...equipment,
             setting:
                 typeof equipment.setting === 'string'
@@ -174,29 +194,21 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                 ? Object.values(equipment.modifier)[0]
                 : ''
         });
-    };
+    }, [customWeapons, customGear, customArmor]);
 
-    public handleList = event => {
-        const { modifierValue } = this.state,
-            arr = Array.isArray(modifierValue)
+    const handleList = useCallback((event: any) => {
+        setState((prev: any) => {
+            const { modifierValue } = prev;
+            const arr = Array.isArray(modifierValue)
                 ? [...modifierValue, event.target.value]
                 : [event.target.value];
 
-        this.setState({ modifierValue: arr });
+            return { ...prev, modifierValue: arr };
+        });
         event.preventDefault();
-    };
+    }, []);
 
-    public buildField = field => {
-        const { type, skills, qualities } = this.props;
-        const {
-            modifier,
-            modifierValue,
-            specialQualities,
-            qualityList,
-            qualityRank,
-            strainThreshold
-        } = this.state;
-
+    const buildField = useCallback((field: string) => {
         switch (field) {
             case 'name':
                 return (
@@ -204,10 +216,10 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                         key={field}
                         type="text"
                         title="name"
-                        value={this.state[field]}
-                        mode={this.state.mode}
+                        value={state[field]}
+                        mode={state.mode}
                         handleChange={event =>
-                            this.setState({ name: event.target.value })
+                            setState((prev: any) => ({ ...prev, name: event.target.value }))
                         }
                     />
                 );
@@ -216,10 +228,10 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="text"
-                        value={this.state[field]}
+                        value={state[field]}
                         title={field}
                         handleChange={event =>
-                            this.setState({ [field]: event.target.value })
+                            setState((prev: any) => ({ ...prev, [field]: event.target.value }))
                         }
                     />
                 );
@@ -228,9 +240,9 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="setting"
-                        setting={this.state.setting}
+                        setting={state.setting}
                         setState={selected =>
-                            this.setState({ setting: selected })
+                            setState((prev: any) => ({ ...prev, setting: selected }))
                         }
                     />
                 );
@@ -245,10 +257,10 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="number"
-                        value={this.state[field]}
+                        value={state[field]}
                         title={field}
                         handleChange={event =>
-                            this.setState({ [field]: +event.target.value })
+                            setState((prev: any) => ({ ...prev, [field]: +event.target.value }))
                         }
                     />
                 );
@@ -258,7 +270,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                         key={field}
                         type="inputSelect"
                         name={field}
-                        value={this.state[field]}
+                        value={state[field]}
                         array={[
                             'Engaged',
                             'Short',
@@ -267,7 +279,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                             'Extreme'
                         ]}
                         handleChange={event =>
-                            this.setState({ [field]: event.target.value })
+                            setState((prev: any) => ({ ...prev, [field]: event.target.value }))
                         }
                     />
                 );
@@ -277,13 +289,13 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                         key={field}
                         type="inputSelect"
                         name={field}
-                        value={this.state[field]}
+                        value={state[field]}
                         array={Object.keys(skills).filter(
                             skill => skills[skill].type === 'Combat'
                         )}
                         nameObj={skills}
                         handleChange={event =>
-                            this.setState({ [field]: event.target.value })
+                            setState((prev: any) => ({ ...prev, [field]: event.target.value }))
                         }
                     />
                 );
@@ -301,10 +313,11 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                             )}
                             nameObj={qualities}
                             handleChange={event =>
-                                this.setState({
+                                setState((prev: any) => ({
+                                    ...prev,
                                     specialQualities: event.target.value,
                                     qualityRank: ''
-                                })
+                                }))
                             }
                         />
 
@@ -317,10 +330,11 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                             value={qualityRank}
                                             title={'qualityRank'}
                                             handleChange={event =>
-                                                this.setState({
+                                                setState((prev: any) => ({
+                                                    ...prev,
                                                     qualityRank:
                                                         event.target.value
-                                                })
+                                                }))
                                             }
                                         />
                                     )}
@@ -328,7 +342,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                 <Row>
                                     <Col sm="2" className="my-auto" />
                                     <Col className="text-left">
-                                        <Button onClick={this.handleAddQuality}>
+                                        <Button onClick={handleAddQuality}>
                                             Add Quality
                                         </Button>
                                     </Col>
@@ -344,7 +358,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                 object={qualityList}
                                 nameObj={qualities}
                                 handleClear={() =>
-                                    this.setState({ qualityList: {} })
+                                    setState((prev: any) => ({ ...prev, qualityList: {} }))
                                 }
                             />
                         )}
@@ -355,9 +369,9 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="description"
-                        value={this.state.description}
+                        value={state.description}
                         handleChange={event =>
-                            this.setState({ description: event.target.value })
+                            setState((prev: any) => ({ ...prev, description: event.target.value }))
                         }
                     />
                 );
@@ -375,10 +389,11 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                             value={Boolean(modifier)}
                             blankOption={false}
                             handleChange={event =>
-                                this.setState({
+                                setState((prev: any) => ({
+                                    ...prev,
                                     modifier: JSON.parse(event.target.value),
                                     modifierValue: ''
-                                })
+                                }))
                             }
                         />
 
@@ -392,10 +407,11 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                     .sort()}
                                 nameObj={skills}
                                 handleChange={event =>
-                                    this.setState({
+                                    setState((prev: any) => ({
+                                        ...prev,
                                         modifier: event.target.value,
                                         modifierValue: 1
-                                    })
+                                    }))
                                 }
                             />
                         )}
@@ -411,7 +427,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                         : true
                                 )}
                                 nameObj={skills}
-                                handleChange={this.handleList}
+                                handleChange={handleList}
                             />
                         )}
 
@@ -422,9 +438,10 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                     value={modifierValue}
                                     title="modifierValue"
                                     handleChange={event =>
-                                        this.setState({
+                                        setState((prev: any) => ({
+                                            ...prev,
                                             modifierValue: +event.target.value
-                                        })
+                                        }))
                                     }
                                 />
                             )}
@@ -436,7 +453,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                 array={modifierValue}
                                 nameObj={{ ...skills, diceNames }}
                                 handleClear={() =>
-                                    this.setState({ modifierValue: [] })
+                                    setState((prev: any) => ({ ...prev, modifierValue: [] }))
                                 }
                             />
                         )}
@@ -447,9 +464,10 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                             array={[0, -1]}
                             value={strainThreshold}
                             handleChange={event =>
-                                this.setState({
+                                setState((prev: any) => ({
+                                    ...prev,
                                     strainThreshold: event.target.value
-                                })
+                                }))
                             }
                         />
 
@@ -473,7 +491,7 @@ class CustomEquipmentComponent extends React.Component<any, any> {
                                     '4 Free Ranks',
                                     '5 Free Ranks'
                                 ]}
-                                handleChange={this.handleList}
+                                handleChange={handleList}
                             />
                         )}
                     </div>
@@ -481,9 +499,9 @@ class CustomEquipmentComponent extends React.Component<any, any> {
             default:
                 return <div />;
         }
-    };
+    }, [state, skills, qualities, type, specialQualities, qualityList, qualityRank, modifier, modifierValue, strainThreshold, handleAddQuality, handleList]);
 
-    public getFields = type => {
+    const getFields = useCallback((type: string) => {
         switch (type) {
             case 'customWeapons':
                 return [
@@ -523,91 +541,71 @@ class CustomEquipmentComponent extends React.Component<any, any> {
             default:
                 return [];
         }
-    };
+    }, []);
 
-    public render() {
-        const { type } = this.props;
-        return (
-            <div>
-                {this.getFields(type).map(field => this.buildField(field))}
-                {this.buildField('specialQualities')}
-                <ControlButtonSet
-                    mode={this.state.mode}
-                    type={type.replace('custom', '')}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                />
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {type &&
-                            Object.keys(this.props[type])
-                                .sort((a, b) =>
-                                    this.props[type][a].name >
-                                    this.props[type][b].name
-                                        ? 1
-                                        : -1
-                                )
-                                .map(key => (
-                                    <tr key={key}>
-                                        <td>{this.props[type][key].name}</td>
-                                        <td className="text-right">
-                                            <ButtonGroup>
-                                                <Button
-                                                    name={key}
-                                                    type={type}
-                                                    onClick={this.handleEdit}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    name={key}
-                                                    type={type}
-                                                    onClick={
-                                                        this.handleDuplicate
-                                                    }
-                                                >
-                                                    Duplicate
-                                                </Button>
-                                                <DeleteButton
-                                                    name={key}
-                                                    type={type}
-                                                    onClick={this.handleDelete}
-                                                />
-                                            </ButtonGroup>
-                                        </td>
-                                    </tr>
-                                ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
-}
+    const currentEquipment = useMemo(() => {
+        return { customWeapons, customGear, customArmor }[type] || {};
+    }, [type, customWeapons, customGear, customArmor]);
 
-const mapStateToProps = state => {
-    return {
-        armor: state.armor,
-        weapons: state.weapons,
-        gear: state.gear,
-        qualities: state.qualities,
-        skills: state.skills,
-        customWeapons: state.customWeapons,
-        customGear: state.customGear,
-        customArmor: state.customArmor
-    };
+    return (
+        <div>
+            {getFields(type).map(field => buildField(field))}
+            {buildField('specialQualities')}
+            <ControlButtonSet
+                mode={state.mode}
+                type={type.replace('custom', '')}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+            />
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {type &&
+                        Object.keys(currentEquipment)
+                            .sort((a, b) =>
+                                currentEquipment[a].name >
+                                currentEquipment[b].name
+                                    ? 1
+                                    : -1
+                            )
+                            .map(key => (
+                                <tr key={key}>
+                                    <td>{currentEquipment[key].name}</td>
+                                    <td className="text-right">
+                                        <ButtonGroup>
+                                            <Button
+                                                name={key}
+                                                type={type}
+                                                onClick={handleEdit}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                name={key}
+                                                type={type}
+                                                onClick={
+                                                    handleDuplicate
+                                                }
+                                            >
+                                                Duplicate
+                                            </Button>
+                                            <DeleteButton
+                                                name={key}
+                                                type={type}
+                                                onClick={handleDelete}
+                                            />
+                                        </ButtonGroup>
+                                    </td>
+                                </tr>
+                            ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ addDataSet, modifyDataSet, removeDataSet }, dispatch);
-
-export const CustomEquipment = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomEquipmentComponent);

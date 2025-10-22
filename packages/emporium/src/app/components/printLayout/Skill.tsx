@@ -1,44 +1,37 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Col, Row } from 'reactstrap';
 import { SkillBlock } from './SkillBlock';
 
-class Component extends React.Component<any> {
-    public render(): React.ReactNode {
-        const { theme } = this.props;
-        return (
-            <div>
-                <Row className="justify-content-end">
-                    <div className={`header header-${theme}`}>SKILLS</div>
-                </Row>
-                <hr />
-                <Row>
-                    <Col>
-                        {['General', 'Magic'].map((type, index) => (
-                            <SkillBlock key={type} type={type} index={index} />
-                        ))}
-                    </Col>
-                    <Col>
-                        {['Combat', 'Social', 'Knowledge'].map(
-                            (type, index) => (
-                                <SkillBlock
-                                    key={type}
-                                    type={type}
-                                    index={index}
-                                />
-                            )
-                        )}
-                    </Col>
-                </Row>
-            </div>
-        );
-    }
-}
+interface SkillProps {}
 
-const mapStateToProps = state => {
-    return {
-        theme: state.theme
-    };
+export const Skill = ({}: SkillProps) => {
+    const theme = useSelector((state: any) => state.theme);
+
+    return (
+        <div>
+            <Row className="justify-content-end">
+                <div className={`header header-${theme}`}>SKILLS</div>
+            </Row>
+            <hr />
+            <Row>
+                <Col>
+                    {['General', 'Magic'].map((type, index) => (
+                        <SkillBlock key={type} type={type} index={index} />
+                    ))}
+                </Col>
+                <Col>
+                    {['Combat', 'Social', 'Knowledge'].map(
+                        (type, index) => (
+                            <SkillBlock
+                                key={type}
+                                type={type}
+                                index={index}
+                            />
+                        )
+                    )}
+                </Col>
+            </Row>
+        </div>
+    );
 };
-
-export const Skill = connect(mapStateToProps)(Component);

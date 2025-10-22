@@ -3,48 +3,60 @@ import { chars } from '@emporium/data-lists';
 import * as images from '@emporium/images';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
 import { upperFirst } from 'lodash-es';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Col, Row, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
 const attributes = { Wounds: 'woundThreshold', Strain: 'strainThreshold' };
 
-class CustomArchetypesComponent extends React.Component<any, any> {
-    public state: any = {};
+interface CustomArchetypesProps {
+    handleClose: () => void;
+}
 
-    private _type = 'customArchetypes';
+const initialState = {
+    name: '',
+    Brawn: 2,
+    Agility: 2,
+    Intellect: 2,
+    Cunning: 2,
+    Willpower: 2,
+    Presence: 2,
+    woundThreshold: 10,
+    strainThreshold: 10,
+    experience: 100,
+    freeSkillRanks: {},
+    description: '',
+    setting: [],
+    archetypeTalents: [],
+    mode: 'add'
+};
 
-    public UNSAFE_componentWillMount = () => this.initState();
+export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
+    const dispatch = useDispatch();
+    const customArchetypes = useSelector((state: any) => state.customArchetypes);
+    const archetypeTalents = useSelector((state: any) => state.archetypeTalents);
+    const skills = useSelector((state: any) => state.skills);
+    const theme = useSelector((state: any) => state.theme);
 
-    public initState = () => {
-        this.setState({
-            name: '',
-            Brawn: 2,
-            Agility: 2,
-            Intellect: 2,
-            Cunning: 2,
-            Willpower: 2,
-            Presence: 2,
-            woundThreshold: 10,
-            strainThreshold: 10,
-            experience: 100,
-            freeSkillRanks: {},
-            description: '',
-            setting: [],
-            archetypeTalents: [],
-            mode: 'add'
-        });
-    };
+    const [state, setState] = useState<any>(initialState);
 
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
+    const {
+        name,
+        freeSkillRanks,
+        experience,
+        description,
+        archetypeTalents: selectedArchetypeTalents,
+        setting,
+        mode
+    } = state;
 
-    public handleClick = event => {
-        const value = +this.state[event.target.name] + +event.target.value;
+    const initState = useCallback(() => {
+        setState(initialState);
+    }, []);
+
+    const handleClick = useCallback((event: any) => {
+        const value = +state[event.target.name] + +event.target.value;
         if (chars.includes(event.target.name) && value > 5) {
             alert(`Cannot set ${event.target.name} to ${value}`);
             return;
@@ -55,31 +67,30 @@ class CustomArchetypesComponent extends React.Component<any, any> {
             return;
         }
 
-        this.setState({ [event.target.name]: value });
-    };
+        setState((prev: any) => ({ ...prev, [event.target.name]: value }));
+    }, [state]);
 
-    public handleSkillSelect = event => {
+    const handleSkillSelect = useCallback((event: any) => {
         const skill = event.target.value;
-        const obj = { ...this.state.freeSkillRanks };
-        obj[skill] ? obj[skill]++ : (obj[skill] = 1);
-        this.setState({ freeSkillRanks: obj });
+        setState((prev: any) => {
+            const obj = { ...prev.freeSkillRanks };
+            obj[skill] ? obj[skill]++ : (obj[skill] = 1);
+            return { ...prev, freeSkillRanks: obj };
+        });
         event.preventDefault();
-    };
+    }, []);
 
-    public handleDuplicate = event => {
-        const { customArchetypes } = this.props;
-        // @ts-ignore
+    const handleDuplicate = useCallback((event: any) => {
         const { id, ...data } = { ...customArchetypes[event.target.name] };
-        this.props.addDataSet(this._type, {
+        dispatch(addDataSet('customArchetypes', {
             ...data,
             name: `${data.name} (copy)`
-        });
-
+        }));
         event.preventDefault();
-    };
+    }, [customArchetypes, dispatch]);
 
-    public handleSubmit = () => {
-        const { freeSkillRanks, archetypeTalents, mode, ...rest } = this.state;
+    const handleSubmit = useCallback(() => {
+        const { freeSkillRanks, archetypeTalents, mode, ...rest } = state;
         const data = {
             ...rest,
             skills: { ...freeSkillRanks },
@@ -87,18 +98,17 @@ class CustomArchetypesComponent extends React.Component<any, any> {
         };
 
         if (mode === 'add') {
-            this.props.addDataSet(this._type, data);
+            dispatch(addDataSet('customArchetypes', data));
         } else if (mode === 'edit') {
-            this.props.modifyDataSet(this._type, data);
+            dispatch(modifyDataSet('customArchetypes', data));
         }
 
-        this.initState();
-    };
+        initState();
+    }, [state, dispatch, initState]);
 
-    public handleEdit = event => {
-        const { customArchetypes } = this.props;
+    const handleEdit = useCallback((event: any) => {
         const archetype = customArchetypes[event.target.name];
-        this.setState({
+        setState({
             freeSkillRanks: archetype.skills ? archetype.skills : {},
             archetypeTalents: archetype.talents ? archetype.talents : [],
             setting:
@@ -108,281 +118,254 @@ class CustomArchetypesComponent extends React.Component<any, any> {
             ...archetype,
             mode: 'edit'
         });
-    };
+    }, [customArchetypes]);
 
-    public handleDelete = event => {
-        this.props.removeDataSet(
-            this._type,
-            this.props[this._type][event.target.name].id
-        );
-
+    const handleDelete = useCallback((event: any) => {
+        dispatch(removeDataSet(
+            'customArchetypes',
+            customArchetypes[event.target.name].id
+        ));
         event.preventDefault();
-    };
+    }, [customArchetypes, dispatch]);
 
-    public render() {
-        const { customArchetypes, skills, theme } = this.props;
-        const {
-            name,
-            freeSkillRanks,
-            experience,
-            description,
-            archetypeTalents,
-            setting,
-            mode
-        } = this.state;
+    const handleCloseWrapper = useCallback(() => {
+        initState();
+        handleClose();
+    }, [initState, handleClose]);
 
-        return (
-            <div>
-                <Fragment
-                    type="text"
-                    title="name"
-                    value={name}
-                    mode={mode}
-                    handleChange={event =>
-                        this.setState({ name: event.target.value })
-                    }
-                />
+    return (
+        <div>
+            <Fragment
+                type="text"
+                title="name"
+                value={name}
+                mode={mode}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, name: event.target.value }))
+                }
+            />
 
-                <Fragment
-                    type="number"
-                    title="experience"
-                    value={experience}
-                    handleChange={event =>
-                        this.setState({ experience: event.target.value })
-                    }
-                />
+            <Fragment
+                type="number"
+                title="experience"
+                value={experience}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, experience: event.target.value }))
+                }
+            />
 
-                <Fragment
-                    type="setting"
-                    setting={setting}
-                    setState={selected => this.setState({ setting: selected })}
-                />
+            <Fragment
+                type="setting"
+                setting={setting}
+                setState={selected => setState((prev: any) => ({ ...prev, setting: selected }))}
+            />
 
-                <Row className="mt-2">
-                    <Col sm="2" className="my-auto">
-                        <b className="text-left">Starting Characteristics</b>
-                    </Col>
-                    <Col>
-                        {chars.map(stat => (
+            <Row className="mt-2">
+                <Col sm="2" className="my-auto">
+                    <b className="text-left">Starting Characteristics</b>
+                </Col>
+                <Col>
+                    {chars.map(stat => (
+                        <div
+                            key={stat}
+                            className="m-2 text-center d-inline-block"
+                        >
                             <div
-                                key={stat}
-                                className="m-2 text-center d-inline-block"
+                                className={`imageBox characteristic characteristic-${stat} m-auto`}
                             >
-                                <div
-                                    className={`imageBox characteristic characteristic-${stat} m-auto`}
+                                <img
+                                    src={images[theme][stat]}
+                                    alt=""
+                                    className="svg"
+                                />
+                                <Row
+                                    className={`characteristicValue characteristicValue-${theme}`}
                                 >
-                                    <img
-                                        src={images[theme][stat]}
-                                        alt=""
-                                        className="svg"
-                                    />
-                                    <Row
-                                        className={`characteristicValue characteristicValue-${theme}`}
-                                    >
-                                        {this.state[stat]}
-                                    </Row>
-                                </div>
-                                <ButtonGroup>
-                                    <Button
-                                        name={stat}
-                                        value={1}
-                                        onClick={this.handleClick}
-                                    >
-                                        ↑
-                                    </Button>
-                                    <Button
-                                        name={stat}
-                                        value={-1}
-                                        onClick={this.handleClick}
-                                    >
-                                        ↓
-                                    </Button>
-                                </ButtonGroup>
+                                    {state[stat]}
+                                </Row>
                             </div>
-                        ))}
-                    </Col>
-                </Row>
-                <Row className="mt-2">
-                    <Col sm="2" className="my-auto">
-                        <b className="text-left">Starting Attributes</b>
-                    </Col>
-                    <Col>
-                        {['Wounds', 'Strain'].map(type => (
+                            <ButtonGroup>
+                                <Button
+                                    name={stat}
+                                    value={1}
+                                    onClick={handleClick}
+                                >
+                                    ↑
+                                </Button>
+                                <Button
+                                    name={stat}
+                                    value={-1}
+                                    onClick={handleClick}
+                                >
+                                    ↓
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+                    ))}
+                </Col>
+            </Row>
+            <Row className="mt-2">
+                <Col sm="2" className="my-auto">
+                    <b className="text-left">Starting Attributes</b>
+                </Col>
+                <Col>
+                    {['Wounds', 'Strain'].map(type => (
+                        <div
+                            className="m-2 text-center d-inline-block"
+                            key={type}
+                        >
                             <div
-                                className="m-2 text-center d-inline-block"
-                                key={type}
+                                className={`imageBox attribute attribute-${upperFirst(
+                                    type
+                                )}Threshold`}
                             >
-                                <div
-                                    className={`imageBox attribute attribute-${upperFirst(
+                                <img
+                                    src={
+                                        images[theme][
+                                            `${upperFirst(type)}Threshold`
+                                        ]
+                                    }
+                                    alt=""
+                                    className="svg"
+                                />
+                                <Row
+                                    className={`attributeValue attributeValue-${theme}-${upperFirst(
                                         type
                                     )}Threshold`}
                                 >
-                                    <img
-                                        src={
-                                            images[theme][
-                                                `${upperFirst(type)}Threshold`
-                                            ]
-                                        }
-                                        alt=""
-                                        className="svg"
-                                    />
-                                    <Row
-                                        className={`attributeValue attributeValue-${theme}-${upperFirst(
-                                            type
-                                        )}Threshold`}
-                                    >
-                                        {this.state[attributes[type]]}
-                                    </Row>
-                                </div>
-                                <ButtonGroup>
-                                    <Button
-                                        name={attributes[type]}
-                                        value={1}
-                                        onClick={this.handleClick}
-                                    >
-                                        ↑
-                                    </Button>
-                                    <Button
-                                        name={attributes[type]}
-                                        value={-1}
-                                        onClick={this.handleClick}
-                                    >
-                                        ↓
-                                    </Button>
-                                </ButtonGroup>
+                                    {state[attributes[type]]}
+                                </Row>
                             </div>
-                        ))}
-                    </Col>
-                </Row>
+                            <ButtonGroup>
+                                <Button
+                                    name={attributes[type]}
+                                    value={1}
+                                    onClick={handleClick}
+                                >
+                                    ↑
+                                </Button>
+                                <Button
+                                    name={attributes[type]}
+                                    value={-1}
+                                    onClick={handleClick}
+                                >
+                                    ↓
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+                    ))}
+                </Col>
+            </Row>
 
-                <Fragment
-                    name="freeSkillRanks"
-                    type="inputSelect"
-                    array={[
-                        ...Object.keys(skills),
-                        ...(Object.keys(freeSkillRanks).includes('choice')
-                            ? ['any', 'choice']
-                            : ['choice'])
-                    ]}
-                    nameObj={skills}
-                    handleChange={this.handleSkillSelect}
-                />
+            <Fragment
+                name="freeSkillRanks"
+                type="inputSelect"
+                array={[
+                    ...Object.keys(skills),
+                    ...(Object.keys(freeSkillRanks).includes('choice')
+                        ? ['any', 'choice']
+                        : ['choice'])
+                ]}
+                nameObj={skills}
+                handleChange={handleSkillSelect}
+            />
 
-                <Fragment
-                    type="list"
-                    array={Object.keys(freeSkillRanks)}
-                    object={freeSkillRanks}
-                    nameObj={skills}
-                    handleClear={() => this.setState({ freeSkillRanks: {} })}
-                />
+            <Fragment
+                type="list"
+                array={Object.keys(freeSkillRanks)}
+                object={freeSkillRanks}
+                nameObj={skills}
+                handleClear={() => setState((prev: any) => ({ ...prev, freeSkillRanks: {} }))}
+            />
 
-                <Fragment
-                    name="archetypeTalents"
-                    type="inputSelect"
-                    array={Object.keys(this.props.archetypeTalents)
-                        .filter(key => !archetypeTalents.includes(key))
-                        .sort()}
-                    nameObj={this.props.archetypeTalents}
-                    handleChange={event =>
-                        this.setState({
-                            archetypeTalents: [
-                                ...this.state.archetypeTalents,
-                                event.target.value
-                            ]
-                        })
-                    }
-                />
+            <Fragment
+                name="archetypeTalents"
+                type="inputSelect"
+                array={Object.keys(archetypeTalents)
+                    .filter(key => !selectedArchetypeTalents.includes(key))
+                    .sort()}
+                nameObj={archetypeTalents}
+                handleChange={event =>
+                    setState((prev: any) => ({
+                        ...prev,
+                        archetypeTalents: [
+                            ...prev.archetypeTalents,
+                            event.target.value
+                        ]
+                    }))
+                }
+            />
 
-                <Fragment
-                    type="list"
-                    array={archetypeTalents.sort()}
-                    nameObj={this.props.archetypeTalents}
-                    handleClear={() => this.setState({ archetypeTalents: [] })}
-                />
+            <Fragment
+                type="list"
+                array={selectedArchetypeTalents.sort()}
+                nameObj={archetypeTalents}
+                handleClear={() => setState((prev: any) => ({ ...prev, archetypeTalents: [] }))}
+            />
 
-                <Fragment
-                    type="description"
-                    value={description}
-                    handleChange={event =>
-                        this.setState({ description: event.target.value })
-                    }
-                />
+            <Fragment
+                type="description"
+                value={description}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, description: event.target.value }))
+                }
+            />
 
-                <ControlButtonSet
-                    mode={this.state.mode}
-                    type={'Archetype'}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                    disabled={name === ''}
-                />
+            <ControlButtonSet
+                mode={mode}
+                type={'Archetype'}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+                disabled={name === ''}
+            />
 
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th />
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {customArchetypes &&
-                            Object.keys(customArchetypes)
-                                .sort((a, b) =>
-                                    customArchetypes[a].name >
-                                    customArchetypes[b].name
-                                        ? 1
-                                        : -1
-                                )
-                                .map(key => (
-                                    <tr key={key}>
-                                        <td>{customArchetypes[key].name}</td>
-                                        <td className="text-right">
-                                            <ButtonGroup>
-                                                <Button
-                                                    name={key}
-                                                    onClick={this.handleEdit}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    name={key}
-                                                    onClick={
-                                                        this.handleDuplicate
-                                                    }
-                                                >
-                                                    Duplicate
-                                                </Button>
-                                                <DeleteButton
-                                                    name={key}
-                                                    onClick={this.handleDelete}
-                                                />
-                                            </ButtonGroup>
-                                        </td>
-                                    </tr>
-                                ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        customArchetypes: state.customArchetypes,
-        archetypes: state.archetypes,
-        archetype: state.archetype,
-        archetypeTalents: state.archetypeTalents,
-        skills: state.skills,
-        theme: state.theme
-    };
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th />
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {customArchetypes &&
+                        Object.keys(customArchetypes)
+                            .sort((a, b) =>
+                                customArchetypes[a].name >
+                                customArchetypes[b].name
+                                    ? 1
+                                    : -1
+                            )
+                            .map(key => (
+                                <tr key={key}>
+                                    <td>{customArchetypes[key].name}</td>
+                                    <td className="text-right">
+                                        <ButtonGroup>
+                                            <Button
+                                                name={key}
+                                                onClick={handleEdit}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                name={key}
+                                                onClick={
+                                                    handleDuplicate
+                                                }
+                                            >
+                                                Duplicate
+                                            </Button>
+                                            <DeleteButton
+                                                name={key}
+                                                onClick={handleDelete}
+                                            />
+                                        </ButtonGroup>
+                                    </td>
+                                </tr>
+                            ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ removeDataSet, addDataSet, modifyDataSet }, dispatch);
-
-export const CustomArchetypes = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomArchetypesComponent);

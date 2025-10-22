@@ -1,74 +1,80 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
 import { uniq } from 'lodash-es';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomCareersComponent extends React.Component<any> {
-    public state: any = {};
-    private _type = 'customCareers';
+interface CustomCareersProps {
+    handleClose: () => void;
+}
 
-    public UNSAFE_componentWillMount = (): void => this.initState();
+const initialState = {
+    name: '',
+    selectedSkills: [],
+    description: '',
+    setting: [],
+    mode: 'add'
+};
 
-    public initState = () => {
-        this.setState({
-            name: '',
-            selectedSkills: [],
-            description: '',
-            setting: [],
-            mode: 'add'
-        });
-    };
+export const CustomCareers = ({ handleClose }: CustomCareersProps) => {
+    const dispatch = useDispatch();
+    const customCareers = useSelector((state: any) => state.customCareers);
+    const skills = useSelector((state: any) => state.skills);
 
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
+    const [state, setState] = useState<any>(initialState);
 
-    public handleSelect = event => {
-        this.setState({
-            selectedSkills: [...this.state.selectedSkills, event.target.value]
-        });
+    const { name, selectedSkills, description, setting, mode } = state;
+
+    const initState = useCallback(() => {
+        setState(initialState);
+    }, []);
+
+    const handleCloseWrapper = useCallback(() => {
+        initState();
+        handleClose();
+    }, [initState, handleClose]);
+
+    const handleSelect = useCallback((event: any) => {
+        setState((prev: any) => ({
+            ...prev,
+            selectedSkills: [...prev.selectedSkills, event.target.value]
+        }));
         event.preventDefault();
-    };
+    }, []);
 
-    public handleSubmit = () => {
-        const { selectedSkills, mode, ...rest } = this.state;
+    const handleSubmit = useCallback(() => {
+        const { selectedSkills, mode, ...rest } = state;
         const data = { ...rest, skills: selectedSkills };
         if (mode === 'add') {
-            this.props.addDataSet(this._type, data);
+            dispatch(addDataSet('customCareers', data));
         } else if (mode === 'edit') {
-            this.props.modifyDataSet(this._type, data);
+            dispatch(modifyDataSet('customCareers', data));
         }
-        this.initState();
-    };
+        initState();
+    }, [state, dispatch, initState]);
 
-    public handleDuplicate = event => {
-        const { customCareers } = this.props;
-        // @ts-ignore
+    const handleDuplicate = useCallback((event: any) => {
         const { id, ...data } = { ...customCareers[event.target.name] };
-        this.props.addDataSet(this._type, {
+        dispatch(addDataSet('customCareers', {
             ...data,
             name: `${data.name} (copy)`
-        });
+        }));
         event.preventDefault();
-    };
+    }, [customCareers, dispatch]);
 
-    public handleDelete = event => {
-        this.props.removeDataSet(
-            this._type,
-            this.props[this._type][event.target.name].id
-        );
+    const handleDelete = useCallback((event: any) => {
+        dispatch(removeDataSet(
+            'customCareers',
+            customCareers[event.target.name].id
+        ));
         event.preventDefault();
-    };
+    }, [customCareers, dispatch]);
 
-    public handleEdit = event => {
-        const { customCareers } = this.props;
+    const handleEdit = useCallback((event: any) => {
         const career = customCareers[event.target.name];
-        this.setState({
+        setState({
             ...career,
             selectedSkills: career.skills ? uniq(career.skills) : [],
             setting:
@@ -77,132 +83,112 @@ class CustomCareersComponent extends React.Component<any> {
                     : career.setting,
             mode: 'edit'
         });
-    };
+    }, [customCareers]);
 
-    public render() {
-        const { skills, customCareers } = this.props;
-        const { name, selectedSkills, description, setting, mode } = this.state;
-        return (
-            <div>
-                <Fragment
-                    type="text"
-                    title="name"
-                    value={name}
-                    mode={mode}
-                    handleChange={event =>
-                        this.setState({ name: event.target.value })
-                    }
-                />
+    return (
+        <div>
+            <Fragment
+                type="text"
+                title="name"
+                value={name}
+                mode={mode}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, name: event.target.value }))
+                }
+            />
 
-                <Fragment
-                    type="setting"
-                    setting={setting}
-                    setState={selected => this.setState({ setting: selected })}
-                />
+            <Fragment
+                type="setting"
+                setting={setting}
+                setState={selected => setState((prev: any) => ({ ...prev, setting: selected }))}
+            />
 
-                <Fragment
-                    name="selectedSkills"
-                    type="inputSelect"
-                    array={Object.keys(skills)
-                        .filter(skill => !selectedSkills.includes(skill))
-                        .sort()}
-                    nameObj={skills}
-                    handleChange={this.handleSelect}
-                />
+            <Fragment
+                name="selectedSkills"
+                type="inputSelect"
+                array={Object.keys(skills)
+                    .filter(skill => !selectedSkills.includes(skill))
+                    .sort()}
+                nameObj={skills}
+                handleChange={handleSelect}
+            />
 
-                <Fragment
-                    type="list"
-                    array={selectedSkills}
-                    nameObj={skills}
-                    handleClear={() => this.setState({ selectedSkills: [] })}
-                />
+            <Fragment
+                type="list"
+                array={selectedSkills}
+                nameObj={skills}
+                handleClear={() => setState((prev: any) => ({ ...prev, selectedSkills: [] }))}
+            />
 
-                <Fragment
-                    type="description"
-                    value={description}
-                    handleChange={event =>
-                        this.setState({ description: event.target.value })
-                    }
-                />
+            <Fragment
+                type="description"
+                value={description}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, description: event.target.value }))
+                }
+            />
 
-                <ControlButtonSet
-                    mode={this.state.mode}
-                    type={'Career'}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                    disabled={name === '' || 0 >= selectedSkills.length}
-                />
+            <ControlButtonSet
+                mode={mode}
+                type={'Career'}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+                disabled={name === '' || 0 >= selectedSkills.length}
+            />
 
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th>SKILLS</th>
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(customCareers)
-                            .sort((a, b) =>
-                                customCareers[a].name > customCareers[b].name
-                                    ? 1
-                                    : -1
-                            )
-                            .map(key => (
-                                <tr key={key} style={{ textAlign: 'left' }}>
-                                    <td>{customCareers[key].name}</td>
-                                    <td>
-                                        {customCareers[key].skills &&
-                                            customCareers[key].skills
-                                                .map(skill =>
-                                                    skills[skill]
-                                                        ? skills[skill].name
-                                                        : skill
-                                                )
-                                                .join(', ')}
-                                    </td>
-                                    <td>
-                                        <ButtonGroup>
-                                            <Button
-                                                name={key}
-                                                onClick={this.handleEdit}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                name={key}
-                                                onClick={this.handleDuplicate}
-                                            >
-                                                Duplicate
-                                            </Button>
-                                            <DeleteButton
-                                                name={key}
-                                                onClick={this.handleDelete}
-                                            />
-                                        </ButtonGroup>
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        customCareers: state.customCareers,
-        skills: state.skills,
-        career: state.career
-    };
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>SKILLS</th>
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(customCareers)
+                        .sort((a, b) =>
+                            customCareers[a].name > customCareers[b].name
+                                ? 1
+                                : -1
+                        )
+                        .map(key => (
+                            <tr key={key} style={{ textAlign: 'left' }}>
+                                <td>{customCareers[key].name}</td>
+                                <td>
+                                    {customCareers[key].skills &&
+                                        customCareers[key].skills
+                                            .map(skill =>
+                                                skills[skill]
+                                                    ? skills[skill].name
+                                                    : skill
+                                            )
+                                            .join(', ')}
+                                </td>
+                                <td>
+                                    <ButtonGroup>
+                                        <Button
+                                            name={key}
+                                            onClick={handleEdit}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            name={key}
+                                            onClick={handleDuplicate}
+                                        >
+                                            Duplicate
+                                        </Button>
+                                        <DeleteButton
+                                            name={key}
+                                            onClick={handleDelete}
+                                        />
+                                    </ButtonGroup>
+                                </td>
+                            </tr>
+                        ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ addDataSet, modifyDataSet, removeDataSet }, dispatch);
-
-export const CustomCareers = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomCareersComponent);

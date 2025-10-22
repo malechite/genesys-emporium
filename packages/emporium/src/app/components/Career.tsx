@@ -1,195 +1,178 @@
 import { changeData } from '@emporium/actions';
-import { maxCareerSkills } from '@emporium/selectors';
+import { maxCareerSkills as maxCareerSkillsSelector } from '@emporium/selectors';
 import { get } from 'lodash-es';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, Col, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Description } from './Description';
 
-class CareerComponent extends React.Component<any> {
-    public handleChange = event => {
-        const {
-            archetypeSpecialSkills = {},
-            careers,
-            archetype,
-            archetypes
-        } = this.props;
-        const skill = Object.keys(archetypeSpecialSkills).filter(
-            key => careers[event.target.value].skills.includes(key) && key
-        );
-        if (skill.length > 0 && archetype === 'AverageHuman') {
-            alert(
-                `${
-                    careers[event.target.value].name
-                } career contains ${skill.join(' ')}, which ${get(
-                    archetypes,
-                    `${archetype}.name`,
-                    'your selected Archetype'
-                )} has modified. Please select a different career or change the skill options in Archetype selection`
+interface CareerProps {
+    modal: boolean;
+    handleClose: () => void;
+}
+
+export const Career = ({ modal, handleClose }: CareerProps) => {
+    const dispatch = useDispatch();
+    const archetype = useSelector((state: any) => state.archetype);
+    const archetypes = useSelector((state: any) => state.archetypes);
+    const career = useSelector((state: any) => state.career);
+    const careerSkillsRank = useSelector((state: any) => state.careerSkillsRank);
+    const careers = useSelector((state: any) => state.careers);
+    const skills = useSelector((state: any) => state.skills);
+    const maxCareerSkills = useSelector((state: any) => maxCareerSkillsSelector(state));
+    const theme = useSelector((state: any) => state.theme);
+    const archetypeSpecialSkills = useSelector((state: any) => state.archetypeSpecialSkills);
+
+    const masterCareer = useMemo(() => careers[career], [careers, career]);
+
+    const handleChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const skill = Object.keys(archetypeSpecialSkills || {}).filter(
+                key => careers[event.target.value].skills.includes(key) && key
             );
-            return;
-        }
-        this.props.changeData(event.target.value, 'career');
-        this.props.changeData([], 'careerSkillsRank');
-        event.preventDefault();
-    };
-
-    public handleCheck = event => {
-        const arr = [...this.props.careerSkillsRank];
-        if (arr.includes(event.target.name)) {
-            arr.forEach((skill, index) => {
-                if (arr[index] === event.target.name) {
-                    arr.splice(index, 1);
-                }
-            });
-        } else {
-            arr.push(event.target.name);
-        }
-        if (this.props.maxCareerSkills >= arr.length) {
-            this.props.changeData(arr, 'careerSkillsRank');
-        } else {
+            if (skill.length > 0 && archetype === 'AverageHuman') {
+                alert(
+                    `${
+                        careers[event.target.value].name
+                    } career contains ${skill.join(' ')}, which ${get(
+                        archetypes,
+                        `${archetype}.name`,
+                        'your selected Archetype'
+                    )} has modified. Please select a different career or change the skill options in Archetype selection`
+                );
+                return;
+            }
+            dispatch(changeData(event.target.value, 'career'));
+            dispatch(changeData([], 'careerSkillsRank'));
             event.preventDefault();
-        }
-    };
+        },
+        [archetypeSpecialSkills, careers, archetype, archetypes, dispatch]
+    );
 
-    public render() {
-        const {
-            career,
-            careers,
-            skills,
-            careerSkillsRank,
-            modal,
-            handleClose,
-            theme
-        } = this.props;
-        const masterCareer = careers[career];
-        return (
-            <Modal
-                className={`body-${theme}`}
-                isOpen={modal}
-                toggle={handleClose}
-            >
-                <ModalHeader toggle={handleClose}>
-                    <b>Select Career</b>
-                </ModalHeader>
-                <ModalBody>
-                    <Input
-                        type="select"
-                        bsSize="sm"
-                        value={masterCareer ? masterCareer.name : ''}
-                        onChange={this.handleChange}
-                    >
-                        <option value={null} />
-                        {Object.keys(careers)
-                            .sort()
-                            .map(key => (
-                                <option value={key} key={key}>
-                                    {careers[key].name}
-                                </option>
-                            ))}
-                    </Input>
-                    <hr />
+    const handleCheck = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const arr = [...careerSkillsRank];
+            if (arr.includes(event.target.name)) {
+                arr.forEach((skill, index) => {
+                    if (arr[index] === event.target.name) {
+                        arr.splice(index, 1);
+                    }
+                });
+            } else {
+                arr.push(event.target.name);
+            }
+            if (maxCareerSkills >= arr.length) {
+                dispatch(changeData(arr, 'careerSkillsRank'));
+            } else {
+                event.preventDefault();
+            }
+        },
+        [careerSkillsRank, maxCareerSkills, dispatch]
+    );
 
-                    {masterCareer && (
-                        <ModalBody>
-                            <Row>
-                                <h5>Career Skills</h5>
-                            </Row>
-                            <Row>
-                                Select {this.props.maxCareerSkills} skills to
-                                start with 1 free rank
-                            </Row>
-                            {masterCareer.skills.sort().map(skill => (
-                                <Row
-                                    key={skill}
-                                    className="ml-3 align-items-center"
-                                >
-                                    <FormGroup check>
-                                        <Input
-                                            type="checkbox"
-                                            name={skill}
-                                            id={skill}
-                                            className="my-2"
-                                            checked={careerSkillsRank.includes(
-                                                skill
-                                            )}
-                                            onChange={this.handleCheck}
-                                        />
-                                        <Label id={skill} check>
-                                            {skills[skill]
-                                                ? skills[skill].name
-                                                : 'Skill not found'}
-                                        </Label>
-                                    </FormGroup>
-                                </Row>
-                            ))}
+    return (
+        <Modal
+            className={`body-${theme}`}
+            isOpen={modal}
+            toggle={handleClose}
+        >
+            <ModalHeader toggle={handleClose}>
+                <b>Select Career</b>
+            </ModalHeader>
+            <ModalBody>
+                <Input
+                    type="select"
+                    bsSize="sm"
+                    value={masterCareer ? masterCareer.name : ''}
+                    onChange={handleChange}
+                >
+                    <option value={null} />
+                    {Object.keys(careers)
+                        .sort()
+                        .map(key => (
+                            <option value={key} key={key}>
+                                {careers[key].name}
+                            </option>
+                        ))}
+                </Input>
+                <hr />
 
-                            <Row className="mb-1 align-self-center">
-                                <Label for="setting" sm="3" className="py-0">
-                                    <b>Setting</b>
-                                </Label>
-                                <Col id="setting" sm="auto">
-                                    {Array.isArray(masterCareer.setting)
-                                        ? masterCareer.setting.sort().join(', ')
-                                        : masterCareer.setting}
-                                </Col>
-                            </Row>
-                            {masterCareer.book && (
-                                <Row className="mb-1 align-self-center">
-                                    <Label for="book" sm="3" className="py-0">
-                                        <b>Book</b>
+                {masterCareer && (
+                    <ModalBody>
+                        <Row>
+                            <h5>Career Skills</h5>
+                        </Row>
+                        <Row>
+                            Select {maxCareerSkills} skills to
+                            start with 1 free rank
+                        </Row>
+                        {masterCareer.skills.sort().map(skill => (
+                            <Row
+                                key={skill}
+                                className="ml-3 align-items-center"
+                            >
+                                <FormGroup check>
+                                    <Input
+                                        type="checkbox"
+                                        name={skill}
+                                        id={skill}
+                                        className="my-2"
+                                        checked={careerSkillsRank.includes(
+                                            skill
+                                        )}
+                                        onChange={handleCheck}
+                                    />
+                                    <Label id={skill} check>
+                                        {skills[skill]
+                                            ? skills[skill].name
+                                            : 'Skill not found'}
                                     </Label>
-                                    <Col sm="auto">
-                                        <Description
-                                            id="book"
-                                            text={`${masterCareer.book}: ${masterCareer.page}`}
-                                        />
-                                    </Col>
-                                </Row>
-                            )}
+                                </FormGroup>
+                            </Row>
+                        ))}
+
+                        <Row className="mb-1 align-self-center">
+                            <Label for="setting" sm="3" className="py-0">
+                                <b>Setting</b>
+                            </Label>
+                            <Col id="setting" sm="auto">
+                                {Array.isArray(masterCareer.setting)
+                                    ? masterCareer.setting.sort().join(', ')
+                                    : masterCareer.setting}
+                            </Col>
+                        </Row>
+                        {masterCareer.book && (
                             <Row className="mb-1 align-self-center">
-                                <Label for="desc" className="py-0" sm="3">
-                                    <b>Description</b>
+                                <Label for="book" sm="3" className="py-0">
+                                    <b>Book</b>
                                 </Label>
                                 <Col sm="auto">
                                     <Description
-                                        id="desc"
-                                        text={masterCareer.description}
+                                        id="book"
+                                        text={`${masterCareer.book}: ${masterCareer.page}`}
                                     />
                                 </Col>
                             </Row>
-                        </ModalBody>
-                    )}
-                </ModalBody>
-                <ModalFooter>
-                    <Button color="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                </ModalFooter>
-            </Modal>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        archetype: state.archetype,
-        archetypes: state.archetypes,
-        career: state.career,
-        careerSkillsRank: state.careerSkillsRank,
-        careers: state.careers,
-        skills: state.skills,
-        maxCareerSkills: maxCareerSkills(state),
-        theme: state.theme,
-        archetypeSpecialSkills: state.archetypeSpecialSkills
-    };
+                        )}
+                        <Row className="mb-1 align-self-center">
+                            <Label for="desc" className="py-0" sm="3">
+                                <b>Description</b>
+                            </Label>
+                            <Col sm="auto">
+                                <Description
+                                    id="desc"
+                                    text={masterCareer.description}
+                                />
+                            </Col>
+                        </Row>
+                    </ModalBody>
+                )}
+            </ModalBody>
+            <ModalFooter>
+                <Button color="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+            </ModalFooter>
+        </Modal>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeData }, dispatch);
-
-export const Career = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CareerComponent);

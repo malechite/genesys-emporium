@@ -1,21 +1,30 @@
 import { changeData } from '@emporium/actions';
 import { chars } from '@emporium/data-lists';
 import * as images from '@emporium/images';
-import { characteristics } from '@emporium/selectors';
-import React from 'react';
-import { connect } from 'react-redux';
+import { characteristics as characteristicsSelector } from '@emporium/selectors';
+import React, { useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 
-class CharacteristicsComponent extends React.Component<any, any> {
-    public countXP = () => {
-        const { archetypes, archetype, creationCharacteristics } = this.props;
+interface CharacteristicsProps {
+    modal: boolean;
+    handleClose: () => void;
+}
+
+export const Characteristics = ({ modal, handleClose }: CharacteristicsProps) => {
+    const dispatch = useDispatch();
+    const archetype = useSelector((state: any) => state.archetype);
+    const archetypes = useSelector((state: any) => state.archetypes);
+    const creationCharacteristics = useSelector((state: any) => state.creationCharacteristics);
+    const theme = useSelector((state: any) => state.theme);
+    const characteristics = useSelector(characteristicsSelector);
+
+    const countXP = useMemo(() => {
         let xp = 0;
         if (!archetype || !archetypes[archetype]) {
             return 0;
         }
 
-        //starting characteristics
         const startingCharacteristics = archetypes[archetype];
 
         Object.keys(creationCharacteristics).forEach(characteristic => {
@@ -25,105 +34,81 @@ class CharacteristicsComponent extends React.Component<any, any> {
             }
         });
         return xp;
-    };
+    }, [archetype, archetypes, creationCharacteristics]);
 
-    public handleClick = event => {
-        const {
-            creationCharacteristics,
-            characteristics,
-            changeData
-        } = this.props;
+    const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         const newObj = { ...creationCharacteristics };
-        const characteristic = event.target.value;
-        if (event.target.name === 'Up') {
+        const characteristic = (event.target as HTMLButtonElement).value;
+        const buttonName = (event.target as HTMLButtonElement).name;
+
+        if (buttonName === 'Up') {
             if (characteristics[characteristic] >= 5) {
                 alert(`You have maxed out ${characteristic}`);
                 return;
             }
             newObj[characteristic]++;
         }
-        if (event.target.name === 'Down') {
+        if (buttonName === 'Down') {
             if (0 >= creationCharacteristics[characteristic]) {
                 alert(`${characteristic} cannot be decreased further`);
                 return;
             }
             newObj[characteristic]--;
         }
-        changeData(newObj, 'creationCharacteristics');
-    };
+        dispatch(changeData(newObj, 'creationCharacteristics'));
+    }, [creationCharacteristics, characteristics, dispatch]);
 
-    public render() {
-        const { characteristics, modal, handleClose, theme } = this.props;
-        return (
-            <Modal
-                className={`body-${theme}`}
-                isOpen={modal}
-                toggle={handleClose}
-            >
-                <ModalHeader toggle={handleClose}>
-                    Modify Characteristics
-                </ModalHeader>
-                <ModalBody className="m-1 text-left">
-                    <Row>Total XP: {this.countXP()}</Row>
-                    <Row className="justify-content-center">
-                        {chars.map(stat => (
-                            <div key={stat} className="m-2 text-center">
-                                <div
-                                    className={`imageBox characteristic characteristic-${stat}`}
+    return (
+        <Modal
+            className={`body-${theme}`}
+            isOpen={modal}
+            toggle={handleClose}
+        >
+            <ModalHeader toggle={handleClose}>
+                Modify Characteristics
+            </ModalHeader>
+            <ModalBody className="m-1 text-left">
+                <Row>Total XP: {countXP}</Row>
+                <Row className="justify-content-center">
+                    {chars.map(stat => (
+                        <div key={stat} className="m-2 text-center">
+                            <div
+                                className={`imageBox characteristic characteristic-${stat}`}
+                            >
+                                <img
+                                    src={images[theme][stat]}
+                                    alt=""
+                                    className="svg"
+                                />
+                                <Row
+                                    className={`characteristicValue characteristicValue-${theme}`}
                                 >
-                                    <img
-                                        src={images[theme][stat]}
-                                        alt=""
-                                        className="svg"
-                                    />
-                                    <Row
-                                        className={`characteristicValue characteristicValue-${theme}`}
-                                    >
-                                        {characteristics[stat]}
-                                    </Row>
-                                </div>
-                                <ButtonGroup>
-                                    <Button
-                                        value={stat}
-                                        name="Up"
-                                        onClick={this.handleClick}
-                                    >
-                                        ↑
-                                    </Button>
-                                    <Button
-                                        value={stat}
-                                        name="Down"
-                                        onClick={this.handleClick}
-                                    >
-                                        ↓
-                                    </Button>
-                                </ButtonGroup>
+                                    {characteristics[stat]}
+                                </Row>
                             </div>
-                        ))}
-                    </Row>
-                </ModalBody>
-                <ModalFooter>
-                    <Button onClick={handleClose}>Close</Button>
-                </ModalFooter>
-            </Modal>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        archetype: state.archetype,
-        archetypes: state.archetypes,
-        creationCharacteristics: state.creationCharacteristics,
-        theme: state.theme,
-        characteristics: characteristics(state)
-    };
+                            <ButtonGroup>
+                                <Button
+                                    value={stat}
+                                    name="Up"
+                                    onClick={handleClick}
+                                >
+                                    ↑
+                                </Button>
+                                <Button
+                                    value={stat}
+                                    name="Down"
+                                    onClick={handleClick}
+                                >
+                                    ↓
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+                    ))}
+                </Row>
+            </ModalBody>
+            <ModalFooter>
+                <Button onClick={handleClose}>Close</Button>
+            </ModalFooter>
+        </Modal>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeData }, dispatch);
-
-export const Characteristics = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CharacteristicsComponent);

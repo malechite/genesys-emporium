@@ -1,161 +1,150 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
-import { Type } from '@nrwl/web/src/utils/third-party/browser/schema';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomMotivationsComponent extends React.Component<any, any> {
-    public state: any = {};
-    private _type = 'customMotivations';
+interface CustomMotivationsProps {
+    handleClose: () => void;
+}
 
-    public UNSAFE_componentWillMount = () => this.initState();
+const initialState = {
+    type: '',
+    name: '',
+    description: '',
+    mode: 'add'
+};
 
-    public initState = () => {
-        this.setState({ type: '', name: '', description: '', mode: 'add' });
-    };
+export const CustomMotivations = ({ handleClose }: CustomMotivationsProps) => {
+    const dispatch = useDispatch();
+    const customMotivations = useSelector((state: any) => state.customMotivations);
 
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
+    const [state, setState] = useState<any>(initialState);
 
-    public handleDuplicate = event => {
-        const { customMotivations } = this.props;
-        // @ts-ignore
+    const { name, type, description, mode } = state;
+
+    const initState = useCallback(() => {
+        setState(initialState);
+    }, []);
+
+    const handleCloseWrapper = useCallback(() => {
+        initState();
+        handleClose();
+    }, [initState, handleClose]);
+
+    const handleDuplicate = useCallback((event: any) => {
         const { id, ...data } = { ...customMotivations[event.target.name] };
-        this.props.addDataSet(this._type, {
+        dispatch(addDataSet('customMotivations', {
             ...data,
             name: `${data.name} (copy)`
-        });
+        }));
         event.preventDefault();
-    };
+    }, [customMotivations, dispatch]);
 
-    public handleSubmit = () => {
-        const { mode, ...data } = this.state;
+    const handleSubmit = useCallback(() => {
+        const { mode, ...data } = state;
         if (mode === 'add') {
-            this.props.addDataSet(Type, data);
+            dispatch(addDataSet('customMotivations', data));
         } else if (mode === 'edit') {
-            this.props.modifyDataSet(Type, data);
+            dispatch(modifyDataSet('customMotivations', data));
         }
-        this.initState();
-    };
+        initState();
+    }, [state, dispatch, initState]);
 
-    public handleDelete = event => {
-        this.props.removeDataSet(
-            Type,
-            this.props[this._type][event.target.name].id
-        );
+    const handleDelete = useCallback((event: any) => {
+        dispatch(removeDataSet(
+            'customMotivations',
+            customMotivations[event.target.name].id
+        ));
         event.preventDefault();
-    };
+    }, [customMotivations, dispatch]);
 
-    public handleEdit = event => {
-        const { customMotivations } = this.props;
-        // noinspection JSUnusedLocalSymbols
+    const handleEdit = useCallback((event: any) => {
         const data = customMotivations[event.target.name];
-        this.setState({
+        setState({
             ...data,
             mode: 'edit'
         });
-    };
+    }, [customMotivations]);
 
-    public render() {
-        const { customMotivations } = this.props;
-        const { name, type, description, mode } = this.state;
-        return (
-            <div>
-                <Fragment
-                    type="text"
-                    title="name"
-                    value={name}
-                    mode={mode}
-                    handleChange={event =>
-                        this.setState({ name: event.target.value })
-                    }
-                />
+    return (
+        <div>
+            <Fragment
+                type="text"
+                title="name"
+                value={name}
+                mode={mode}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, name: event.target.value }))
+                }
+            />
 
-                <Fragment
-                    type="inputSelect"
-                    name="type"
-                    value={type}
-                    array={['Strength', 'Flaw', 'Desire', 'Fear']}
-                    handleChange={event =>
-                        this.setState({ type: event.target.value })
-                    }
-                />
+            <Fragment
+                type="inputSelect"
+                name="type"
+                value={type}
+                array={['Strength', 'Flaw', 'Desire', 'Fear']}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, type: event.target.value }))
+                }
+            />
 
-                <Fragment
-                    type="description"
-                    value={description}
-                    mode={mode}
-                    handleChange={event =>
-                        this.setState({ description: event.target.value })
-                    }
-                />
+            <Fragment
+                type="description"
+                value={description}
+                mode={mode}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, description: event.target.value }))
+                }
+            />
 
-                <ControlButtonSet
-                    mode={this.state.mode}
-                    type={'motivation'}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                    disabled={name === '' || type === ''}
-                />
+            <ControlButtonSet
+                mode={mode}
+                type={'motivation'}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+                disabled={name === '' || type === ''}
+            />
 
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th>TYPE</th>
-                            <th />
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>TYPE</th>
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(customMotivations).map(key => (
+                        <tr key={key}>
+                            <td>{customMotivations[key].name}</td>
+                            <td>{customMotivations[key].type}</td>
+                            <td>
+                                <ButtonGroup>
+                                    <Button
+                                        name={key}
+                                        onClick={handleEdit}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        name={key}
+                                        onClick={handleDuplicate}
+                                    >
+                                        Duplicate
+                                    </Button>
+                                    <DeleteButton
+                                        name={key}
+                                        onClick={handleDelete}
+                                    />
+                                </ButtonGroup>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(customMotivations).map(key => (
-                            <tr key={key}>
-                                <td>{customMotivations[key].name}</td>
-                                <td>{customMotivations[key].type}</td>
-                                <td>
-                                    <ButtonGroup>
-                                        <Button
-                                            name={key}
-                                            onClick={this.handleEdit}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            name={key}
-                                            onClick={this.handleDuplicate}
-                                        >
-                                            Duplicate
-                                        </Button>
-                                        <DeleteButton
-                                            name={key}
-                                            onClick={this.handleDelete}
-                                        />
-                                    </ButtonGroup>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        customMotivations: state.customMotivations
-    };
+                    ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ removeDataSet, addDataSet, modifyDataSet }, dispatch);
-
-export const CustomMotivations = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomMotivationsComponent);

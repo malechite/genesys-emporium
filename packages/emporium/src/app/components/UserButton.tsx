@@ -1,13 +1,17 @@
 import { changeUser } from '@emporium/actions';
 import firebase from '@firebase/app';
 import '@firebase/auth';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 
-class UserButtonComponent extends React.Component<any, any> {
-    public getName = () => {
+interface UserButtonProps {}
+
+export const UserButton = ({}: UserButtonProps) => {
+    const dispatch = useDispatch();
+    const user = useSelector((state: any) => state.user);
+
+    const getName = useCallback(() => {
         const user = firebase.auth().currentUser;
         let name = 'Rando Calrissian';
         if (user) {
@@ -18,42 +22,26 @@ class UserButtonComponent extends React.Component<any, any> {
             }
         }
         return name;
-    };
+    }, []);
 
-    public handleClick = async () => {
+    const handleClick = useCallback(async () => {
         firebase
             .auth()
             .signOut()
-            .then(() => this.props.changeUser(null))
+            .then(() => dispatch(changeUser(null)))
             .catch(console.error);
-    };
+    }, [dispatch]);
 
-    public render() {
-        return (
-            <UncontrolledButtonDropdown>
-                <DropdownToggle caret size="sm">
-                    {this.getName()}
-                </DropdownToggle>
-                <DropdownMenu>
-                    <DropdownItem onClick={this.handleClick}>
-                        Sign Out
-                    </DropdownItem>
-                </DropdownMenu>
-            </UncontrolledButtonDropdown>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        user: state.user
-    };
+    return (
+        <UncontrolledButtonDropdown>
+            <DropdownToggle caret size="sm">
+                {getName()}
+            </DropdownToggle>
+            <DropdownMenu>
+                <DropdownItem onClick={handleClick}>
+                    Sign Out
+                </DropdownItem>
+            </DropdownMenu>
+        </UncontrolledButtonDropdown>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeUser }, dispatch);
-
-export const UserButton = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(UserButtonComponent);

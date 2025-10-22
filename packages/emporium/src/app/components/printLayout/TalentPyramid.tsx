@@ -1,12 +1,18 @@
 import { talentCount } from '@emporium/selectors';
-import React from 'react';
+import React, { useCallback } from 'react';
 import DynamicFont from 'react-dynamic-font';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Card, CardBody, Row } from 'reactstrap';
 
-class Component extends React.Component<any> {
-    public activation = (talentKey): string => {
-        const { talents } = this.props;
+interface TalentPyramidProps {}
+
+export const TalentPyramid = ({}: TalentPyramidProps) => {
+    const masterTalents = useSelector((state: any) => state.masterTalents);
+    const talents = useSelector((state: any) => state.talents);
+    const talentCountSelector = useSelector((state: any) => talentCount(state));
+    const theme = useSelector((state: any) => state.theme);
+
+    const activation = useCallback((talentKey: string): string => {
         if (talentKey === '') {
             return 'var(--light)';
         }
@@ -20,60 +26,46 @@ class Component extends React.Component<any> {
         } else {
             return 'var(--lightblue)';
         }
-    };
+    }, [talents]);
 
-    public render(): React.ReactNode {
-        const { masterTalents, talents, theme } = this.props;
-        return (
-            <div className="break-before">
-                <Row className="justify-content-end">
-                    <div className={`header header-${theme}`}>TALENTS</div>
-                </Row>
-                <hr />
-                {Object.keys(masterTalents).map(row => (
-                    <Row key={row}>
-                        {Object.keys(masterTalents[row]).map(tier => {
-                            const talent = talents[masterTalents[row][tier]];
-                            return (
-                                <Card
-                                    key={row + tier}
-                                    className="m-2 my-3 talentCard"
+    return (
+        <div className="break-before">
+            <Row className="justify-content-end">
+                <div className={`header header-${theme}`}>TALENTS</div>
+            </Row>
+            <hr />
+            {Object.keys(masterTalents).map(row => (
+                <Row key={row}>
+                    {Object.keys(masterTalents[row]).map(tier => {
+                        const talent = talents[masterTalents[row][tier]];
+                        return (
+                            <Card
+                                key={row + tier}
+                                className="m-2 my-3 talentCard"
+                            >
+                                <CardBody
+                                    className="p-1 text-center"
+                                    style={{
+                                        backgroundColor: activation(
+                                            masterTalents[row][tier]
+                                        )
+                                    }}
                                 >
-                                    <CardBody
-                                        className="p-1 text-center"
-                                        style={{
-                                            backgroundColor: this.activation(
-                                                masterTalents[row][tier]
-                                            )
-                                        }}
-                                    >
-                                        <DynamicFont
-                                            content={
-                                                masterTalents[row][tier] === ''
-                                                    ? 'inactive'
-                                                    : talent
-                                                    ? talent.name
-                                                    : 'Missing Talent'
-                                            }
-                                        />
-                                    </CardBody>
-                                </Card>
-                            );
-                        })}
-                    </Row>
-                ))}
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        masterTalents: state.masterTalents,
-        talents: state.talents,
-        talentCount: talentCount(state),
-        theme: state.theme
-    };
+                                    <DynamicFont
+                                        content={
+                                            masterTalents[row][tier] === ''
+                                                ? 'inactive'
+                                                : talent
+                                                ? talent.name
+                                                : 'Missing Talent'
+                                        }
+                                    />
+                                </CardBody>
+                            </Card>
+                        );
+                    })}
+                </Row>
+            ))}
+        </div>
+    );
 };
-
-export const TalentPyramid = connect(mapStateToProps)(Component);

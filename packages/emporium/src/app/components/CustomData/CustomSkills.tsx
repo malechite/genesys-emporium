@@ -1,195 +1,178 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { chars } from '@emporium/data-lists';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomSkillsComponent extends React.Component<any, any> {
-    public state: any = {};
-    private _type = 'customSkills';
-
-    public UNSAFE_componentWillMount = () => this.initState();
-
-    public initState = () => {
-        this.setState({
-            name: '',
-            type: '',
-            characteristic: '',
-            setting: [],
-            mode: 'add'
-        });
-    };
-
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
-
-    public handleDuplicate = event => {
-        const { customSkills } = this.props;
-        // @ts-ignore
-        const { id, ...data } = { ...customSkills[event.target.name] };
-        this.props.addDataSet(this._type, {
-            ...data,
-            name: `${data.name} (copy)`
-        });
-        event.preventDefault();
-    };
-
-    public handleSubmit = event => {
-        const { mode, ...rest } = this.state;
-        const data = { ...rest };
-        if (mode === 'add') {
-            this.props.addDataSet(this._type, data);
-        } else if (mode === 'edit') {
-            this.props.modifyDataSet(this._type, data);
-        }
-        this.initState();
-        event.preventDefault();
-    };
-
-    public handleDelete = event => {
-        this.props.removeDataSet(
-            this._type,
-            this.props[this._type][event.target.name].id
-        );
-        event.preventDefault();
-    };
-
-    public handleEdit = event => {
-        const { customSkills } = this.props;
-        const skill = customSkills[event.target.name];
-        this.setState({
-            ...skill,
-            mode: 'edit',
-            setting:
-                typeof skill.setting === 'string'
-                    ? skill.setting.split(', ')
-                    : skill.setting
-        });
-    };
-
-    public render() {
-        const { customSkills } = this.props;
-        const { name, type, characteristic, setting, mode } = this.state;
-        return (
-            <div>
-                <Fragment
-                    type="text"
-                    title="Name"
-                    value={name}
-                    mode={mode}
-                    handleChange={event =>
-                        this.setState({ name: event.target.value })
-                    }
-                />
-
-                <Fragment
-                    type="inputSelect"
-                    name="type"
-                    value={type}
-                    array={[
-                        'General',
-                        'Combat',
-                        'Social',
-                        'Magic',
-                        'Knowledge'
-                    ]}
-                    handleChange={event =>
-                        this.setState({ type: event.target.value })
-                    }
-                />
-
-                <Fragment
-                    type="inputSelect"
-                    name="characteristic"
-                    value={characteristic}
-                    array={chars}
-                    handleChange={event =>
-                        this.setState({ characteristic: event.target.value })
-                    }
-                />
-
-                <Fragment
-                    type="setting"
-                    setting={setting}
-                    setState={selected => this.setState({ setting: selected })}
-                />
-
-                <ControlButtonSet
-                    mode={this.state.mode}
-                    type={'Skill'}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                    disabled={
-                        name === '' || type === '' || characteristic === ''
-                    }
-                />
-
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th>TYPE</th>
-                            <th>CHAR</th>
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(customSkills)
-                            .sort((a, b) =>
-                                customSkills[a].name > customSkills[b].name
-                                    ? 1
-                                    : -1
-                            )
-                            .map(key => (
-                                <tr key={key}>
-                                    <td>{customSkills[key].name}</td>
-                                    <td>{customSkills[key].type}</td>
-                                    <td>{customSkills[key].characteristic}</td>
-                                    <td>
-                                        <ButtonGroup>
-                                            <Button
-                                                name={key}
-                                                onClick={this.handleEdit}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                name={key}
-                                                onClick={this.handleDuplicate}
-                                            >
-                                                Duplicate
-                                            </Button>
-                                            <DeleteButton
-                                                name={key}
-                                                onClick={this.handleDelete}
-                                            />
-                                        </ButtonGroup>
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
+interface CustomSkillsProps {
+    handleClose?: () => void;
 }
 
-const mapStateToProps = state => {
-    return {
-        customSkills: state.customSkills
-    };
+export const CustomSkills = ({ handleClose }: CustomSkillsProps) => {
+    const dispatch = useDispatch();
+    const customSkills = useSelector((state: any) => state.customSkills);
+    const [name, setName] = useState('');
+    const [type, setType] = useState('');
+    const [characteristic, setCharacteristic] = useState('');
+    const [setting, setSetting] = useState<any[]>([]);
+    const [mode, setMode] = useState('add');
+
+    const _type = 'customSkills';
+
+    const initState = useCallback(() => {
+        setName('');
+        setType('');
+        setCharacteristic('');
+        setSetting([]);
+        setMode('add');
+    }, []);
+
+    const handleCloseModal = useCallback(() => {
+        initState();
+        handleClose?.();
+    }, [initState, handleClose]);
+
+    const handleDuplicate = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const { id, ...data } = { ...customSkills[event.currentTarget.name] };
+        dispatch(addDataSet(_type, {
+            ...data,
+            name: `${data.name} (copy)`
+        }));
+        event.preventDefault();
+    }, [customSkills, dispatch]);
+
+    const handleSubmit = useCallback((event: React.MouseEvent) => {
+        const data = { name, type, characteristic, setting };
+        if (mode === 'add') {
+            dispatch(addDataSet(_type, data));
+        } else if (mode === 'edit') {
+            dispatch(modifyDataSet(_type, data));
+        }
+        initState();
+        event.preventDefault();
+    }, [name, type, characteristic, setting, mode, dispatch, initState]);
+
+    const handleDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        dispatch(removeDataSet(
+            _type,
+            customSkills[event.currentTarget.name].id
+        ));
+        event.preventDefault();
+    }, [customSkills, dispatch]);
+
+    const handleEdit = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const skill = customSkills[event.currentTarget.name];
+        setName(skill.name);
+        setType(skill.type);
+        setCharacteristic(skill.characteristic);
+        setSetting(typeof skill.setting === 'string'
+            ? skill.setting.split(', ')
+            : skill.setting);
+        setMode('edit');
+    }, [customSkills]);
+
+    return (
+        <div>
+            <Fragment
+                type="text"
+                title="Name"
+                value={name}
+                mode={mode}
+                handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setName(event.target.value)
+                }
+            />
+
+            <Fragment
+                type="inputSelect"
+                name="type"
+                value={type}
+                array={[
+                    'General',
+                    'Combat',
+                    'Social',
+                    'Magic',
+                    'Knowledge'
+                ]}
+                handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setType(event.target.value)
+                }
+            />
+
+            <Fragment
+                type="inputSelect"
+                name="characteristic"
+                value={characteristic}
+                array={chars}
+                handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setCharacteristic(event.target.value)
+                }
+            />
+
+            <Fragment
+                type="setting"
+                setting={setting}
+                setState={(selected: any[]) => setSetting(selected)}
+            />
+
+            <ControlButtonSet
+                mode={mode}
+                type={'Skill'}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+                disabled={
+                    name === '' || type === '' || characteristic === ''
+                }
+            />
+
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>TYPE</th>
+                        <th>CHAR</th>
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(customSkills)
+                        .sort((a, b) =>
+                            customSkills[a].name > customSkills[b].name
+                                ? 1
+                                : -1
+                        )
+                        .map(key => (
+                            <tr key={key}>
+                                <td>{customSkills[key].name}</td>
+                                <td>{customSkills[key].type}</td>
+                                <td>{customSkills[key].characteristic}</td>
+                                <td>
+                                    <ButtonGroup>
+                                        <Button
+                                            name={key}
+                                            onClick={handleEdit}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            name={key}
+                                            onClick={handleDuplicate}
+                                        >
+                                            Duplicate
+                                        </Button>
+                                        <DeleteButton
+                                            name={key}
+                                            onClick={handleDelete}
+                                        />
+                                    </ButtonGroup>
+                                </td>
+                            </tr>
+                        ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ removeDataSet, addDataSet, modifyDataSet }, dispatch);
-
-export const CustomSkills = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomSkillsComponent);

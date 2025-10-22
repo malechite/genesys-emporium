@@ -1,14 +1,33 @@
 import { addDataSet, importCharacter, importCustomData } from '@emporium/actions';
 import { customDataTypes, dataTypes } from '@emporium/data';
 import { cloneDeep, pull, startCase } from 'lodash-es';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, Card, CardBody, CardHeader, CardText, Col, Input, Label, Row } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { db } from '../firestoreDB';
 
-class ImportExportComponent extends React.Component<any> {
-    public state = {
+interface ImportExportProps {}
+
+export const ImportExport = ({}: ImportExportProps) => {
+    const dispatch = useDispatch();
+
+    // Redux state
+    const characterList = useSelector((state: any) => state.characterList);
+    const user = useSelector((state: any) => state.user);
+    const customArchetypes = useSelector((state: any) => state.customArchetypes);
+    const customArchetypeTalents = useSelector((state: any) => state.customArchetypeTalents);
+    const customArmor = useSelector((state: any) => state.customArmor);
+    const customCareers = useSelector((state: any) => state.customCareers);
+    const customGear = useSelector((state: any) => state.customGear);
+    const customMotivations = useSelector((state: any) => state.customMotivations);
+    const customSettings = useSelector((state: any) => state.customSettings);
+    const customSkills = useSelector((state: any) => state.customSkills);
+    const customTalents = useSelector((state: any) => state.customTalents);
+    const customVehicles = useSelector((state: any) => state.customVehicles);
+    const customWeapons = useSelector((state: any) => state.customWeapons);
+
+    // Local state
+    const [state, setState] = useState({
         characters: [],
         customArchetypes: [],
         customArchetypeTalents: [],
@@ -21,10 +40,10 @@ class ImportExportComponent extends React.Component<any> {
         customTalents: [],
         customVehicles: [],
         customWeapons: []
-    };
+    });
 
-    public initState = () => {
-        this.setState({
+    const initState = useCallback(() => {
+        setState({
             characters: [],
             customArchetypes: [],
             customArchetypeTalents: [],
@@ -38,29 +57,42 @@ class ImportExportComponent extends React.Component<any> {
             customVehicles: [],
             customWeapons: []
         });
-    };
+    }, []);
 
-    public generateFileName = () => {
+    const generateFileName = useCallback(() => {
         const time = new Date(Date.now())
             .toLocaleString()
             .replace(/[\s+]/g, '')
             .replace(/[\D+]/g, '_')
             .slice(0, -2);
         return `GenesysEmporiumExport_${time}.json`;
-    };
+    }, []);
 
-    public generateExport = async () => {
-        const { user, characterList } = this.props;
+    const generateExport = useCallback(async () => {
         const final: any = {};
+        const props = {
+            customArchetypes,
+            customArchetypeTalents,
+            customArmor,
+            customCareers,
+            customGear,
+            customMotivations,
+            customSettings,
+            customSkills,
+            customTalents,
+            customVehicles,
+            customWeapons
+        };
+
         Promise.all(
-            Object.keys(this.state).map(async type => {
-                if (0 >= this.state[type].length) {
+            Object.keys(state).map(async type => {
+                if (0 >= state[type].length) {
                     return;
                 }
                 return new Promise(resolve0 => {
                     switch (type) {
                         case 'characters':
-                            const characters = this.state[type].map(
+                            const characters = state[type].map(
                                 async character => {
                                     return new Promise(async resolve1 => {
                                         const file = {
@@ -100,9 +132,9 @@ class ImportExportComponent extends React.Component<any> {
                             });
                             break;
                         default:
-                            final[type] = this.state[type].map(key => {
+                            final[type] = state[type].map(key => {
                                 // noinspection JSUnusedLocalSymbols
-                                const { read, write, ...item } = this.props[
+                                const { read, write, ...item } = props[
                                     type
                                 ][key];
                                 return item;
@@ -118,104 +150,132 @@ class ImportExportComponent extends React.Component<any> {
                 type: 'application/json'
             });
             element.href = URL.createObjectURL(file);
-            element.download = this.generateFileName();
+            element.download = generateFileName();
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
-            this.initState();
+            initState();
         });
-    };
+    }, [state, characterList, user, customArchetypes, customArchetypeTalents, customArmor, customCareers, customGear, customMotivations, customSettings, customSkills, customTalents, customVehicles, customWeapons, generateFileName, initState]);
 
-    public handleChange = event => {
-        const { characterList } = this.props;
-        const { characters } = this.state;
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const name = event.target.name;
         const value = event.target.value;
+        const props = {
+            customArchetypes,
+            customArchetypeTalents,
+            customArmor,
+            customCareers,
+            customGear,
+            customMotivations,
+            customSettings,
+            customSkills,
+            customTalents,
+            customVehicles,
+            customWeapons
+        };
 
         if (name === 'characters') {
             let arr = [];
             if (value === 'all') {
-                if (characters.length === Object.keys(characterList).length) {
+                if (state.characters.length === Object.keys(characterList).length) {
                     arr = [];
                 } else {
                     arr = Object.keys(characterList);
                 }
             } else {
-                arr = cloneDeep(characters);
+                arr = cloneDeep(state.characters);
                 if (arr.includes(value)) {
                     arr.splice(arr.indexOf(value), 1);
                 } else {
                     arr.push(value);
                 }
             }
-            this.setState({ characters: arr });
+            setState({ ...state, characters: arr });
         } else {
             const key = event.target.id;
             switch (true) {
                 case value === 'all':
                     if (
                         customDataTypes.every(type =>
-                            Object.keys(this.props[type]).every(key =>
-                                this.state[type].includes(key)
+                            Object.keys(props[type]).every(key =>
+                                state[type].includes(key)
                             )
                         )
                     ) {
+                        const newState = { ...state };
                         customDataTypes.forEach(type =>
-                            this.setState({ [type]: [] })
+                            newState[type] = []
                         );
+                        setState(newState);
                     } else {
+                        const newState = { ...state };
                         customDataTypes.forEach(
                             type =>
-                                this.props[type] &&
-                                this.setState({
-                                    [type]: Object.keys(this.props[type])
-                                })
+                                props[type] &&
+                                (newState[type] = Object.keys(props[type]))
                         );
+                        setState(newState);
                     }
                     break;
                 case customDataTypes.includes(value) && !key:
                     if (
-                        Object.keys(this.props[value]).every(key =>
-                            this.state[value].includes(key)
+                        Object.keys(props[value]).every(key =>
+                            state[value].includes(key)
                         )
                     ) {
-                        this.setState({ [value]: [] });
+                        setState({ ...state, [value]: [] });
                     } else {
-                        this.setState({
-                            [value]: Object.keys(this.props[value])
+                        setState({
+                            ...state,
+                            [value]: Object.keys(props[value])
                         });
                     }
                     break;
                 default:
-                    let data = [...this.state[value]];
-                    if (this.state[value].includes(key)) {
+                    let data = [...state[value]];
+                    if (state[value].includes(key)) {
                         data = pull(data, key);
                     } else {
                         data.push(key);
                     }
-                    this.setState({ [value]: data });
+                    setState({ ...state, [value]: data });
             }
         }
-    };
+    }, [state, characterList, customArchetypes, customArchetypeTalents, customArmor, customCareers, customGear, customMotivations, customSettings, customSkills, customTalents, customVehicles, customWeapons]);
 
-    public handleFile = event => {
+    const handleFile = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const fileInput = event.target.files[0];
         const reader = new FileReader();
         reader.onload = event => {
             const file = JSON.parse(event.target.result.toString());
+            const props = {
+                customArchetypes,
+                customArchetypeTalents,
+                customArmor,
+                customCareers,
+                customGear,
+                customMotivations,
+                customSettings,
+                customSkills,
+                customTalents,
+                customVehicles,
+                customWeapons
+            };
+
             //old exports Delete at some point
             if (Array.isArray(file)) {
                 file.forEach(data => {
                     switch (Object.keys(data)[0]) {
                         case 'character':
-                            this.props.importCharacter(
+                            dispatch(importCharacter(
                                 data.character,
-                                this.props.user
-                            );
+                                user
+                            ));
                             alert(`${data.character.name} Imported!`);
                             break;
                         case 'customData':
-                            this.props.importCustomData(data.customData);
+                            dispatch(importCustomData(data.customData));
                             alert(`Custom Data Imported!`);
                             break;
                         default:
@@ -231,10 +291,10 @@ class ImportExportComponent extends React.Component<any> {
                     switch (type) {
                         case 'characters':
                             file[type].forEach(character => {
-                                this.props.importCharacter(
+                                dispatch(importCharacter(
                                     character,
-                                    this.props.user
-                                );
+                                    user
+                                ));
                                 text += `${character.name} Imported!\n`;
                             });
                             break;
@@ -250,13 +310,13 @@ class ImportExportComponent extends React.Component<any> {
                         case 'customWeapons':
                             file[type].forEach(data => {
                                 if (
-                                    Object.keys(this.props[type]).some(
+                                    Object.keys(props[type]).some(
                                         id => id === data.id
                                     )
                                 ) {
                                     text += `${data.name}(${data.id}) not imported, already exists in database.\n`;
                                 } else {
-                                    this.props.addDataSet(type, data);
+                                    dispatch(addDataSet(type, data));
                                     text += `${startCase(
                                         type
                                     )} Data Imported.\n`;
@@ -273,187 +333,167 @@ class ImportExportComponent extends React.Component<any> {
         };
         reader.onerror = () => alert('Bad File');
         reader.readAsText(fileInput);
+    }, [dispatch, user, customArchetypes, customArchetypeTalents, customArmor, customCareers, customGear, customMotivations, customSettings, customSkills, customTalents, customVehicles, customWeapons]);
+
+    const props = {
+        customArchetypes,
+        customArchetypeTalents,
+        customArmor,
+        customCareers,
+        customGear,
+        customMotivations,
+        customSettings,
+        customSkills,
+        customTalents,
+        customVehicles,
+        customWeapons
     };
 
-    public render() {
-        const { characterList } = this.props;
-        const { characters } = this.state;
-        return (
-            <div className="align-self-end align-self-middle">
+    return (
+        <div className="align-self-end align-self-middle">
+            <Row>
+                <Button
+                    className="m-2 align-middle"
+                    onClick={generateExport}
+                >
+                    Export Selected{' '}
+                </Button>{' '}
+                <Label
+                    for="import"
+                    className="btn-secondary py-2 px-3 m-2 align-middle rounded"
+                >
+                    Import File
+                </Label>
+                <Input
+                    type="file"
+                    accept=".json"
+                    onChange={handleFile}
+                    id="import"
+                    hidden
+                />
+            </Row>
+            <div>
                 <Row>
-                    <Button
-                        className="m-2 align-middle"
-                        onClick={this.generateExport}
-                    >
-                        Export Selected{' '}
-                    </Button>{' '}
-                    <Label
-                        for="import"
-                        className="btn-secondary py-2 px-3 m-2 align-middle rounded"
-                    >
-                        Import File
-                    </Label>
                     <Input
-                        type="file"
-                        accept=".json"
-                        onChange={this.handleFile}
-                        id="import"
-                        hidden
-                    />
+                        type="checkbox"
+                        value="all"
+                        name={'characters'}
+                        checked={
+                            state.characters.length ===
+                            Object.keys(characterList).length
+                        }
+                        onChange={handleChange}
+                    />{' '}
+                    <h5 className="my-auto">All Characters</h5>
                 </Row>
-                <div>
-                    <Row>
-                        <Input
-                            type="checkbox"
-                            value="all"
-                            name={'characters'}
-                            checked={
-                                characters.length ===
-                                Object.keys(characterList).length
-                            }
-                            onChange={this.handleChange}
-                        />{' '}
-                        <h5 className="my-auto">All Characters</h5>
-                    </Row>
-                    <Row>
-                        {Object.keys(characterList)
-                            .sort()
-                            .map(item => (
-                                <Col md="4" key={item}>
-                                    <Card className="m-2 w-100">
+                <Row>
+                    {Object.keys(characterList)
+                        .sort()
+                        .map(item => (
+                            <Col md="4" key={item}>
+                                <Card className="m-2 w-100">
+                                    <CardHeader>
+                                        <CardText className="ml-2">
+                                            <Input
+                                                type="checkbox"
+                                                checked={state.characters.includes(
+                                                    item
+                                                )}
+                                                value={item}
+                                                name={'characters'}
+                                                onChange={handleChange}
+                                            />{' '}
+                                            <strong>
+                                                {characterList[item]}
+                                            </strong>
+                                        </CardText>
+                                    </CardHeader>
+                                </Card>
+                            </Col>
+                        ))}
+                </Row>
+            </div>
+            <div>
+                <Row>
+                    <Input
+                        type="checkbox"
+                        value="all"
+                        name={'customData'}
+                        checked={customDataTypes.every(
+                            type =>
+                                state[type].length ===
+                                (props[type]
+                                    ? Object.keys(props[type]).length
+                                    : 0)
+                        )}
+                        onChange={handleChange}
+                    />{' '}
+                    <h5 className="my-auto">All Custom Data</h5>
+                </Row>
+                <Row>
+                    {customDataTypes.sort().map(
+                        type =>
+                            props[type] && (
+                                <Col md="4" key={type} className="my-1">
+                                    <Card className="m-2 w-100 h-100">
                                         <CardHeader>
                                             <CardText className="ml-2">
                                                 <Input
                                                     type="checkbox"
-                                                    checked={characters.includes(
-                                                        item
-                                                    )}
-                                                    value={item}
-                                                    name={'characters'}
-                                                    onChange={this.handleChange}
+                                                    checked={
+                                                        state[type]
+                                                            .length > 0 &&
+                                                        Object.keys(
+                                                            props[type]
+                                                        ).every(key =>
+                                                            state[
+                                                                type
+                                                            ].includes(key)
+                                                        )
+                                                    }
+                                                    value={type}
+                                                    onChange={
+                                                        handleChange
+                                                    }
                                                 />{' '}
-                                                <strong>
-                                                    {characterList[item]}
-                                                </strong>
+                                                <strong>{type}</strong>
                                             </CardText>
                                         </CardHeader>
+                                        <CardBody
+                                            key={type}
+                                            className="py-2 ml-4"
+                                        >
+                                            {Object.keys(props[type])
+                                                .sort()
+                                                .map(key => (
+                                                    <CardText key={key}>
+                                                        <Input
+                                                            type="checkbox"
+                                                            checked={state[
+                                                                type
+                                                            ].includes(key)}
+                                                            id={key}
+                                                            value={type}
+                                                            onChange={
+                                                                handleChange
+                                                            }
+                                                        />{' '}
+                                                        {props[type][
+                                                            key
+                                                        ].name
+                                                            ? props[
+                                                                  type
+                                                              ][key].name
+                                                            : key}
+                                                    </CardText>
+                                                ))}
+                                        </CardBody>
                                     </Card>
                                 </Col>
-                            ))}
-                    </Row>
-                </div>
-                <div>
-                    <Row>
-                        <Input
-                            type="checkbox"
-                            value="all"
-                            name={'customData'}
-                            checked={customDataTypes.every(
-                                type =>
-                                    this.state[type].length ===
-                                    (this.props[type]
-                                        ? Object.keys(this.props[type]).length
-                                        : 0)
-                            )}
-                            onChange={this.handleChange}
-                        />{' '}
-                        <h5 className="my-auto">All Custom Data</h5>
-                    </Row>
-                    <Row>
-                        {customDataTypes.sort().map(
-                            type =>
-                                this.props[type] && (
-                                    <Col md="4" key={type} className="my-1">
-                                        <Card className="m-2 w-100 h-100">
-                                            <CardHeader>
-                                                <CardText className="ml-2">
-                                                    <Input
-                                                        type="checkbox"
-                                                        checked={
-                                                            this.state[type]
-                                                                .length > 0 &&
-                                                            Object.keys(
-                                                                this.props[type]
-                                                            ).every(key =>
-                                                                this.state[
-                                                                    type
-                                                                ].includes(key)
-                                                            )
-                                                        }
-                                                        value={type}
-                                                        onChange={
-                                                            this.handleChange
-                                                        }
-                                                    />{' '}
-                                                    <strong>{type}</strong>
-                                                </CardText>
-                                            </CardHeader>
-                                            <CardBody
-                                                key={type}
-                                                className="py-2 ml-4"
-                                            >
-                                                {Object.keys(this.props[type])
-                                                    .sort()
-                                                    .map(key => (
-                                                        <CardText key={key}>
-                                                            <Input
-                                                                type="checkbox"
-                                                                checked={this.state[
-                                                                    type
-                                                                ].includes(key)}
-                                                                id={key}
-                                                                value={type}
-                                                                onChange={
-                                                                    this
-                                                                        .handleChange
-                                                                }
-                                                            />{' '}
-                                                            {this.props[type][
-                                                                key
-                                                            ].name
-                                                                ? this.props[
-                                                                      type
-                                                                  ][key].name
-                                                                : key}
-                                                        </CardText>
-                                                    ))}
-                                            </CardBody>
-                                        </Card>
-                                    </Col>
-                                )
-                        )}
-                    </Row>
-                </div>
+                            )
+                    )}
+                </Row>
             </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        characterList: state.characterList,
-        user: state.user,
-        customArchetypes: state.customArchetypes,
-        customArchetypeTalents: state.customArchetypeTalents,
-        customArmor: state.customArmor,
-        customCareers: state.customCareers,
-        customGear: state.customGear,
-        customMotivations: state.customMotivations,
-        customSettings: state.customSettings,
-        customSkills: state.customSkills,
-        customTalents: state.customTalents,
-        customVehicles: state.customVehicles,
-        customWeapons: state.customWeapons
-    };
-};
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators(
-        { importCharacter, importCustomData, addDataSet },
-        dispatch
+        </div>
     );
-
-export const ImportExport = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(ImportExportComponent);
+};

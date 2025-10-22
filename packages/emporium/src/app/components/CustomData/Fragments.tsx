@@ -1,49 +1,67 @@
 import { startCase } from 'lodash-es';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Button, Col, Input, Label, Row } from 'reactstrap';
 import { Description } from '../Description';
 
+interface FragmentProps {
+    type: string;
+    name?: string;
+    title?: string;
+    value?: any;
+    mode?: string;
+    handleChange?: (event: any) => void;
+    setState?: (selected: any) => void;
+    setting?: any[];
+    array?: any[];
+    nameObj?: any;
+    object?: any;
+    handleClear?: () => void;
+    blankText?: string;
+    blankOption?: boolean;
+}
+
 // TODO: Refactor, rename to avoid conflicting with React.Fragment
-class FragmentComponent extends React.Component<any, any> {
-    public buildList = (array, object, nameObj) => {
-        if (!object) {
-            return array
-                .map(key => (nameObj[key] ? nameObj[key].name : key))
+export const Fragment = ({
+    type,
+    name,
+    title,
+    value = '',
+    mode,
+    handleChange,
+    setState,
+    setting,
+    array,
+    nameObj,
+    object,
+    handleClear,
+    blankText = '',
+    blankOption = true
+}: FragmentProps) => {
+    const settings = useSelector((state: any) => state.settings);
+
+    const buildList = useCallback((arr: any[], obj: any, nObj: any) => {
+        if (!obj) {
+            return arr
+                .map(key => (nObj[key] ? nObj[key].name : key))
                 .sort()
                 .join(', ');
         }
 
         let text = '';
-        array.sort().forEach(key => {
-            text += nameObj[key] ? nameObj[key].name : key;
-            if (object[key] > 1) {
-                text += `(${object[key]}), `;
+        arr.sort().forEach(key => {
+            text += nObj[key] ? nObj[key].name : key;
+            if (obj[key] > 1) {
+                text += `(${obj[key]}), `;
             } else {
                 text += ', ';
             }
         });
         return text.slice(0, -2);
-    };
+    }, []);
 
-    public buildField = () => {
-        const {
-            type,
-            settings,
-            setState,
-            setting,
-            mode,
-            handleChange,
-            value = '',
-            array,
-            nameObj,
-            object,
-            handleClear,
-            blankText = '',
-            blankOption = true,
-            name
-        } = this.props;
+    const buildField = useCallback(() => {
         switch (type) {
             case 'name':
                 return (
@@ -80,9 +98,9 @@ class FragmentComponent extends React.Component<any, any> {
                 return (
                     <div style={{ display: 'inline-flex' }}>
                         <Description
-                            text={this.buildList(array, object, nameObj)}
+                            text={buildList(array || [], object, nameObj)}
                         />
-                        {array.length > 0 && (
+                        {array && array.length > 0 && (
                             <Button
                                 className="btn-outline-warning ml-2"
                                 onClick={handleClear}
@@ -102,7 +120,7 @@ class FragmentComponent extends React.Component<any, any> {
                         placeholder="Choose a Setting..."
                         clearButton={true}
                         onChange={selected =>
-                            setState(
+                            setState?.(
                                 selected.includes('All') ? ['All'] : selected
                             )
                         }
@@ -131,17 +149,18 @@ class FragmentComponent extends React.Component<any, any> {
                         onChange={handleChange}
                     >
                         {blankOption && <option value="">{blankText}</option>}
-                        {array
-                            .sort((a, b) => a - b)
-                            .map(key => (
-                                <option value={key} key={key}>
-                                    {nameObj
-                                        ? nameObj[key.toString()]
-                                            ? nameObj[key.toString()].name
-                                            : startCase(key)
-                                        : startCase(key)}
-                                </option>
-                            ))}
+                        {array &&
+                            array
+                                .sort((a, b) => a - b)
+                                .map(key => (
+                                    <option value={key} key={key}>
+                                        {nameObj
+                                            ? nameObj[key.toString()]
+                                                ? nameObj[key.toString()].name
+                                                : startCase(key)
+                                            : startCase(key)}
+                                    </option>
+                                ))}
                     </Input>
                 );
             case 'numberSelect':
@@ -153,45 +172,35 @@ class FragmentComponent extends React.Component<any, any> {
                         name={name}
                         onChange={handleChange}
                     >
-                        {array.map(key => (
-                            <option value={key} key={key}>
-                                {key}
-                            </option>
-                        ))}
+                        {array &&
+                            array.map(key => (
+                                <option value={key} key={key}>
+                                    {key}
+                                </option>
+                            ))}
                     </Input>
                 );
             default:
-                break;
+                return null;
         }
-    };
+    }, [type, value, mode, handleChange, array, nameObj, object, handleClear, blankText, blankOption, name, settings, setting, setState, buildList]);
 
-    public render() {
-        const { name, type, title = name ? name : type } = this.props;
-        return (
-            <Row className="my-2 ">
-                <Label
-                    for={title}
-                    sm="2"
-                    className={
-                        title === 'description' || title === 'weapons'
-                            ? 'mt-0'
-                            : 'my-auto'
-                    }
-                >
-                    <b>{startCase(title)}</b>
-                </Label>
-                <Col id={title}>{this.buildField()}</Col>
-            </Row>
-        );
-    }
-}
+    const displayTitle = title || name || type;
 
-function mapStateToProps(state) {
-    return {
-        settings: state.settings
-    };
-}
-
-// @ts-ignore
-export const Fragment = connect(mapStateToProps)(FragmentComponent);
-// @ts-ignore
+    return (
+        <Row className="my-2 ">
+            <Label
+                for={displayTitle}
+                sm="2"
+                className={
+                    displayTitle === 'description' || displayTitle === 'weapons'
+                        ? 'mt-0'
+                        : 'my-auto'
+                }
+            >
+                <b>{startCase(displayTitle)}</b>
+            </Label>
+            <Col id={displayTitle}>{buildField()}</Col>
+        </Row>
+    );
+};

@@ -1,131 +1,116 @@
 import { changeData } from '@emporium/actions';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader, Row, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { SkillRow } from './SkillRow';
 
-class SkillBlockComponent extends React.Component<any, any> {
-    public state = { modal: false };
+interface SkillBlockProps {
+    type: string;
+}
 
-    public handleChange = event => {
-        const { masterSkills, changeData } = this.props;
+export const SkillBlock = ({ type }: SkillBlockProps) => {
+    const dispatch = useDispatch();
+    const [modal, setModal] = useState(false);
+    const skills = useSelector((state: any) => state.skills);
+    const masterSkills = useSelector((state: any) => state.masterSkills);
+
+    const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const newObj = { ...masterSkills };
         if (!newObj[event.target.name]) {
             newObj[event.target.name] = {};
         }
         newObj[event.target.name].hide = !newObj[event.target.name].hide;
-        changeData(newObj, 'masterSkills');
-    };
+        dispatch(changeData(newObj, 'masterSkills'));
+    }, [masterSkills, dispatch]);
 
-    public render() {
-        const { type, skills, masterSkills } = this.props;
-        const { modal } = this.state;
-        return (
-            <div>
-                <Row>
-                    <b>{type.toUpperCase()}</b>
-                    <Button
-                        color="link"
-                        className="noUnderLine p-0"
-                        onClick={() => this.setState({ modal: true })}
-                    >
-                        ⚙
-                    </Button>
-                </Row>
-                <Table className="mx-auto bg-light">
-                    <thead>
-                        <tr>
-                            <th className="table-name">Skill</th>
-                            <th className="table-career">Career</th>
-                            <th className="table-rank">Rank</th>
-                            <th className="table-dice">Dice Pool</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(skills)
-                            .sort()
-                            .map(
-                                skillKey =>
-                                    skills[skillKey].type === type && (
-                                        <SkillRow
-                                            skillKey={skillKey}
-                                            key={skillKey}
-                                        />
-                                    )
-                            )}
-                    </tbody>
-                </Table>
-                <Modal
-                    isOpen={modal}
-                    toggle={() => this.setState({ modal: false })}
+    return (
+        <div>
+            <Row>
+                <b>{type.toUpperCase()}</b>
+                <Button
+                    color="link"
+                    className="noUnderLine p-0"
+                    onClick={() => setModal(true)}
                 >
-                    <ModalHeader
-                        toggle={() => this.setState({ modal: false })}
-                    >{`${type} Skills`}</ModalHeader>
-                    <ModalBody className="">
-                        <Table>
-                            <thead>
-                                <tr>
-                                    <th>Show/Hide</th>
-                                    <th>Skill</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Object.keys(skills)
-                                    .sort()
-                                    .map(
-                                        key =>
-                                            skills[key].type === type && (
-                                                <tr key={key}>
-                                                    <td>
-                                                        <input
-                                                            type="checkbox"
-                                                            name={key}
-                                                            checked={
-                                                                masterSkills[
-                                                                    key
-                                                                ]
-                                                                    ? !masterSkills[
-                                                                          key
-                                                                      ].hide
-                                                                    : true
-                                                            }
-                                                            onChange={
-                                                                this
-                                                                    .handleChange
-                                                            }
-                                                        />
-                                                    </td>
-                                                    <td>{skills[key].name}</td>
-                                                </tr>
-                                            )
-                                    )}
-                            </tbody>
-                        </Table>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button onClick={() => this.setState({ modal: false })}>
-                            Close
-                        </Button>
-                    </ModalFooter>
-                </Modal>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        skills: state.skills,
-        masterSkills: state.masterSkills
-    };
+                    ⚙
+                </Button>
+            </Row>
+            <Table className="mx-auto bg-light">
+                <thead>
+                    <tr>
+                        <th className="table-name">Skill</th>
+                        <th className="table-career">Career</th>
+                        <th className="table-rank">Rank</th>
+                        <th className="table-dice">Dice Pool</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(skills)
+                        .sort()
+                        .map(
+                            skillKey =>
+                                skills[skillKey].type === type && (
+                                    <SkillRow
+                                        skillKey={skillKey}
+                                        key={skillKey}
+                                    />
+                                )
+                        )}
+                </tbody>
+            </Table>
+            <Modal
+                isOpen={modal}
+                toggle={() => setModal(false)}
+            >
+                <ModalHeader
+                    toggle={() => setModal(false)}
+                >{`${type} Skills`}</ModalHeader>
+                <ModalBody className="">
+                    <Table>
+                        <thead>
+                            <tr>
+                                <th>Show/Hide</th>
+                                <th>Skill</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.keys(skills)
+                                .sort()
+                                .map(
+                                    key =>
+                                        skills[key].type === type && (
+                                            <tr key={key}>
+                                                <td>
+                                                    <input
+                                                        type="checkbox"
+                                                        name={key}
+                                                        checked={
+                                                            masterSkills[
+                                                                key
+                                                            ]
+                                                                ? !masterSkills[
+                                                                      key
+                                                                  ].hide
+                                                                : true
+                                                        }
+                                                        onChange={
+                                                            handleChange
+                                                        }
+                                                    />
+                                                </td>
+                                                <td>{skills[key].name}</td>
+                                            </tr>
+                                        )
+                                )}
+                        </tbody>
+                    </Table>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={() => setModal(false)}>
+                        Close
+                    </Button>
+                </ModalFooter>
+            </Modal>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ changeData }, dispatch);
-
-export const SkillBlock = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(SkillBlockComponent);

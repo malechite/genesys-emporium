@@ -1,82 +1,173 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useCallback, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomVehiclesComponent extends React.Component<any, any> {
-    public state: any = {};
-    private _type = 'customVehicles';
+interface CustomVehiclesProps {
+    handleClose?: () => void;
+}
 
-    public UNSAFE_componentWillMount = () => this.initState();
+export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
+    const dispatch = useDispatch();
+    const customVehicles = useSelector((state: any) => state.customVehicles);
+    const skills = useSelector((state: any) => state.skills);
 
-    public initState = () => {
-        this.setState({
-            name: '',
-            silhouette: 0,
-            maxSpeed: 0,
-            handling: 0,
-            defense: 0,
-            armor: 0,
-            hullTraumaThreshold: 0,
-            systemStrainThreshold: 0,
-            skill: '',
-            complement: '',
-            passengerCapacity: 0,
-            price: 0,
-            rarity: 0,
-            consumables: '',
-            encumbranceCapacity: 0,
-            weapons: '',
-            setting: [],
-            mode: 'add'
-        });
-    };
+    const [name, setName] = useState('');
+    const [silhouette, setSilhouette] = useState(0);
+    const [maxSpeed, setMaxSpeed] = useState(0);
+    const [handling, setHandling] = useState(0);
+    const [defense, setDefense] = useState(0);
+    const [armor, setArmor] = useState(0);
+    const [hullTraumaThreshold, setHullTraumaThreshold] = useState(0);
+    const [systemStrainThreshold, setSystemStrainThreshold] = useState(0);
+    const [skill, setSkill] = useState('');
+    const [complement, setComplement] = useState('');
+    const [passengerCapacity, setPassengerCapacity] = useState(0);
+    const [price, setPrice] = useState(0);
+    const [rarity, setRarity] = useState(0);
+    const [consumables, setConsumables] = useState('');
+    const [encumbranceCapacity, setEncumbranceCapacity] = useState(0);
+    const [weapons, setWeapons] = useState('');
+    const [setting, setSetting] = useState<any[]>([]);
+    const [mode, setMode] = useState('add');
 
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
+    const _type = 'customVehicles';
 
-    public handleDuplicate = event => {
-        const { customVehicles } = this.props;
-        // noinspection JSUnusedLocalSymbols
-        const { id = '', ...data } = { ...customVehicles[event.target.name] };
-        this.props.addDataSet(this._type, {
+    const initState = useCallback(() => {
+        setName('');
+        setSilhouette(0);
+        setMaxSpeed(0);
+        setHandling(0);
+        setDefense(0);
+        setArmor(0);
+        setHullTraumaThreshold(0);
+        setSystemStrainThreshold(0);
+        setSkill('');
+        setComplement('');
+        setPassengerCapacity(0);
+        setPrice(0);
+        setRarity(0);
+        setConsumables('');
+        setEncumbranceCapacity(0);
+        setWeapons('');
+        setSetting([]);
+        setMode('add');
+    }, []);
+
+    const handleCloseModal = useCallback(() => {
+        initState();
+        handleClose?.();
+    }, [initState, handleClose]);
+
+    const handleDuplicate = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const { id = '', ...data } = { ...customVehicles[event.currentTarget.name] };
+        dispatch(addDataSet(_type, {
             ...data,
             name: `${data.name} (copy)`
-        });
+        }));
         event.preventDefault();
-    };
+    }, [customVehicles, dispatch]);
 
-    public handleSubmit = event => {
-        const { mode, ...data } = this.state;
+    const handleSubmit = useCallback((event: React.MouseEvent) => {
+        const data = {
+            name,
+            silhouette,
+            maxSpeed,
+            handling,
+            defense,
+            armor,
+            hullTraumaThreshold,
+            systemStrainThreshold,
+            skill,
+            complement,
+            passengerCapacity,
+            price,
+            rarity,
+            consumables,
+            encumbranceCapacity,
+            weapons,
+            setting
+        };
         if (mode === 'add') {
-            this.props.addDataSet(this._type, data);
+            dispatch(addDataSet(_type, data));
         } else if (mode === 'edit') {
-            this.props.modifyDataSet(this._type, data);
+            dispatch(modifyDataSet(_type, data));
         }
-        this.initState();
+        initState();
         event.preventDefault();
-    };
+    }, [name, silhouette, maxSpeed, handling, defense, armor, hullTraumaThreshold, systemStrainThreshold, skill, complement, passengerCapacity, price, rarity, consumables, encumbranceCapacity, weapons, setting, mode, dispatch, initState]);
 
-    public handleDelete = event => {
-        this.props.removeDataSet(
-            this._type,
-            this.props[this._type][event.target.name].id
-        );
+    const handleDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        dispatch(removeDataSet(
+            _type,
+            customVehicles[event.currentTarget.name].id
+        ));
         event.preventDefault();
-    };
+    }, [customVehicles, dispatch]);
 
-    public handleEdit = event => {
-        const { customVehicles } = this.props;
-        this.setState({ mode: 'edit', ...customVehicles[event.target.name] });
-    };
+    const handleEdit = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const vehicle = customVehicles[event.currentTarget.name];
+        setMode('edit');
+        setName(vehicle.name);
+        setSilhouette(vehicle.silhouette);
+        setMaxSpeed(vehicle.maxSpeed);
+        setHandling(vehicle.handling);
+        setDefense(vehicle.defense);
+        setArmor(vehicle.armor);
+        setHullTraumaThreshold(vehicle.hullTraumaThreshold);
+        setSystemStrainThreshold(vehicle.systemStrainThreshold);
+        setSkill(vehicle.skill);
+        setComplement(vehicle.complement);
+        setPassengerCapacity(vehicle.passengerCapacity);
+        setPrice(vehicle.price);
+        setRarity(vehicle.rarity);
+        setConsumables(vehicle.consumables);
+        setEncumbranceCapacity(vehicle.encumbranceCapacity);
+        setWeapons(vehicle.weapons);
+        setSetting(vehicle.setting);
+    }, [customVehicles]);
 
-    public buildField = field => {
-        const { skills } = this.props;
+    const buildField = useCallback((field: string) => {
+        const stateMap: Record<string, any> = {
+            name,
+            silhouette,
+            maxSpeed,
+            handling,
+            defense,
+            armor,
+            hullTraumaThreshold,
+            systemStrainThreshold,
+            skill,
+            complement,
+            passengerCapacity,
+            price,
+            rarity,
+            consumables,
+            encumbranceCapacity,
+            weapons
+        };
+
+        const setterMap: Record<string, (value: any) => void> = {
+            name: setName,
+            silhouette: setSilhouette,
+            maxSpeed: setMaxSpeed,
+            handling: setHandling,
+            defense: setDefense,
+            armor: setArmor,
+            hullTraumaThreshold: setHullTraumaThreshold,
+            systemStrainThreshold: setSystemStrainThreshold,
+            skill: setSkill,
+            complement: setComplement,
+            passengerCapacity: setPassengerCapacity,
+            price: setPrice,
+            rarity: setRarity,
+            consumables: setConsumables,
+            encumbranceCapacity: setEncumbranceCapacity,
+            weapons: setWeapons
+        };
+
         switch (field) {
             case 'name':
             case 'consumables':
@@ -85,10 +176,10 @@ class CustomVehiclesComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="text"
-                        value={this.state[field]}
+                        value={stateMap[field]}
                         title={field}
-                        handleChange={event =>
-                            this.setState({ [field]: event.target.value })
+                        handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setterMap[field](event.target.value)
                         }
                     />
                 );
@@ -106,10 +197,10 @@ class CustomVehiclesComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="number"
-                        value={this.state[field]}
+                        value={stateMap[field]}
                         title={field}
-                        handleChange={event =>
-                            this.setState({ [field]: event.target.value })
+                        handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setterMap[field](event.target.value)
                         }
                     />
                 );
@@ -119,13 +210,13 @@ class CustomVehiclesComponent extends React.Component<any, any> {
                         key={field}
                         type="inputSelect"
                         name="skill"
-                        value={this.state[field]}
+                        value={stateMap[field]}
                         array={Object.keys(skills).filter(
-                            skill => skills[skill].type === 'General'
+                            skillKey => skills[skillKey].type === 'General'
                         )}
                         nameObj={skills}
-                        handleChange={event =>
-                            this.setState({ skill: event.target.value })
+                        handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setSkill(event.target.value)
                         }
                     />
                 );
@@ -135,10 +226,10 @@ class CustomVehiclesComponent extends React.Component<any, any> {
                         key={field}
                         type="inputSelect"
                         name="rarity"
-                        value={this.state[field]}
+                        value={stateMap[field]}
                         array={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                        handleChange={event =>
-                            this.setState({ rarity: event.target.value })
+                        handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setRarity(event.target.value)
                         }
                     />
                 );
@@ -147,9 +238,9 @@ class CustomVehiclesComponent extends React.Component<any, any> {
                     <Fragment
                         key={field}
                         type="weapons"
-                        value={this.state[field]}
-                        handleChange={event =>
-                            this.setState({ [field]: event.target.value })
+                        value={stateMap[field]}
+                        handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                            setWeapons(event.target.value)
                         }
                     />
                 );
@@ -157,102 +248,85 @@ class CustomVehiclesComponent extends React.Component<any, any> {
             default:
                 return <div />;
         }
-    };
+    }, [name, silhouette, maxSpeed, handling, defense, armor, hullTraumaThreshold, systemStrainThreshold, skill, complement, passengerCapacity, price, rarity, consumables, encumbranceCapacity, weapons, skills]);
 
-    public render() {
-        const { customVehicles } = this.props;
-        const { mode, setting } = this.state;
-        return (
-            <div>
-                {[
-                    'name',
-                    'silhouette',
-                    'maxSpeed',
-                    'handling',
-                    'defense',
-                    'armor',
-                    'hullTraumaThreshold',
-                    'systemStrainThreshold',
-                    'skill',
-                    'complement',
-                    'passengerCapacity',
-                    'price',
-                    'rarity',
-                    'consumables',
-                    'encumbranceCapacity',
-                    'weapons'
-                ].map(field => this.buildField(field))}
-                <Fragment
-                    type="setting"
-                    setting={setting}
-                    setState={selected => this.setState({ setting: selected })}
-                />
-                <ControlButtonSet
-                    mode={mode}
-                    type={'Vehicle'}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                    disabled={this.state.name === ''}
-                />
-                .
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(customVehicles)
-                            .sort((a, b) =>
-                                customVehicles[a].name > customVehicles[b].name
-                                    ? 1
-                                    : -1
-                            )
-                            .map(key => (
-                                <tr key={key}>
-                                    <td>{customVehicles[key].name}</td>
-                                    <td>
-                                        <ButtonGroup>
-                                            <Button
-                                                name={key}
-                                                onClick={this.handleEdit}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                name={key}
-                                                onClick={this.handleDuplicate}
-                                            >
-                                                Duplicate
-                                            </Button>
-                                            <DeleteButton
-                                                name={key}
-                                                onClick={this.handleDelete}
-                                            />
-                                        </ButtonGroup>
-                                    </td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
-}
+    const fields = useMemo(() => [
+        'name',
+        'silhouette',
+        'maxSpeed',
+        'handling',
+        'defense',
+        'armor',
+        'hullTraumaThreshold',
+        'systemStrainThreshold',
+        'skill',
+        'complement',
+        'passengerCapacity',
+        'price',
+        'rarity',
+        'consumables',
+        'encumbranceCapacity',
+        'weapons'
+    ], []);
 
-const mapStateToProps = state => {
-    return {
-        customVehicles: state.customVehicles,
-        skills: state.skills
-    };
+    return (
+        <div>
+            {fields.map(field => buildField(field))}
+            <Fragment
+                type="setting"
+                setting={setting}
+                setState={(selected: any[]) => setSetting(selected)}
+            />
+            <ControlButtonSet
+                mode={mode}
+                type={'Vehicle'}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+                disabled={name === ''}
+            />
+            .
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(customVehicles)
+                        .sort((a, b) =>
+                            customVehicles[a].name > customVehicles[b].name
+                                ? 1
+                                : -1
+                        )
+                        .map(key => (
+                            <tr key={key}>
+                                <td>{customVehicles[key].name}</td>
+                                <td>
+                                    <ButtonGroup>
+                                        <Button
+                                            name={key}
+                                            onClick={handleEdit}
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            name={key}
+                                            onClick={handleDuplicate}
+                                        >
+                                            Duplicate
+                                        </Button>
+                                        <DeleteButton
+                                            name={key}
+                                            onClick={handleDelete}
+                                        />
+                                    </ButtonGroup>
+                                </td>
+                            </tr>
+                        ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ removeDataSet, addDataSet, modifyDataSet }, dispatch);
-
-export const CustomVehicles = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomVehiclesComponent);

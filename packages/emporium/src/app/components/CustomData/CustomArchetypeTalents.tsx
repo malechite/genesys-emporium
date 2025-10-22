@@ -1,87 +1,104 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { diceNames, modifiableAttributes } from '@emporium/data-lists';
 import { ControlButtonSet, DeleteButton } from '@emporium/ui';
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useCallback, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
-import { bindActionCreators } from 'redux';
 import { Fragment } from './Fragments';
 
-class CustomArchetypeTalentsComponent extends React.Component<any, any> {
-    public state: any = {};
-    private _type = 'customArchetypeTalents';
+interface CustomArchetypeTalentsProps {
+    handleClose: () => void;
+}
 
-    public UNSAFE_componentWillMount = () => this.initState();
+const initialState = {
+    name: '',
+    activation: '',
+    turn: '',
+    description: '',
+    setting: [],
+    modifier: false,
+    modifierValue: '',
+    mode: 'add'
+};
 
-    public initState = () => {
-        this.setState({
-            name: '',
-            activation: '',
-            turn: '',
-            description: '',
-            setting: [],
-            modifier: false,
-            modifierValue: '',
-            mode: 'add'
+export const CustomArchetypeTalents = ({ handleClose }: CustomArchetypeTalentsProps) => {
+    const dispatch = useDispatch();
+    const customArchetypeTalents = useSelector((state: any) => state.customArchetypeTalents);
+    const skills = useSelector((state: any) => state.skills);
+
+    const [state, setState] = useState<any>(initialState);
+
+    const {
+        name,
+        tier,
+        ranked,
+        activation,
+        turn,
+        description,
+        setting,
+        modifier,
+        modifierValue,
+        mode
+    } = state;
+
+    const initState = useCallback(() => {
+        setState(initialState);
+    }, []);
+
+    const handleList = useCallback((event: any) => {
+        setState((prev: any) => {
+            const { modifierValue } = prev;
+            let arr = [];
+            if (Array.isArray(modifierValue)) {
+                arr = [...modifierValue];
+            }
+            arr.push(event.target.value);
+            return { ...prev, modifierValue: arr };
         });
-    };
-
-    public handleList = event => {
-        const { modifierValue } = this.state;
-        let arr = [];
-        if (Array.isArray(modifierValue)) {
-            arr = [...modifierValue];
-        }
-
-        arr.push(event.target.value);
-        this.setState({ modifierValue: arr });
         event.preventDefault();
-    };
+    }, []);
 
-    public handleSubmit = () => {
-        const { modifier, modifierValue, mode, ...rest } = this.state;
+    const handleSubmit = useCallback(() => {
+        const { modifier, modifierValue, mode, ...rest } = state;
         const data = { ...rest };
         if (modifier) {
             data.modifier = { [modifier]: modifierValue };
         }
         if (mode === 'add') {
-            this.props.addDataSet(this._type, data);
+            dispatch(addDataSet('customArchetypeTalents', data));
         } else if (mode === 'edit') {
-            this.props.modifyDataSet(this._type, data);
+            dispatch(modifyDataSet('customArchetypeTalents', data));
         }
-        this.initState();
-    };
+        initState();
+    }, [state, dispatch, initState]);
 
-    public handleDuplicate = event => {
-        const { customArchetypeTalents } = this.props;
-        // @ts-ignore
+    const handleDuplicate = useCallback((event: any) => {
         const { id, ...data } = {
             ...customArchetypeTalents[event.target.name]
         };
-        this.props.addDataSet(this._type, {
+        dispatch(addDataSet('customArchetypeTalents', {
             ...data,
             name: `${data.name} (copy)`
-        });
+        }));
         event.preventDefault();
-    };
+    }, [customArchetypeTalents, dispatch]);
 
-    public handleDelete = event => {
-        this.props.removeDataSet(
-            this._type,
-            this.props[this._type][event.target.name].id
-        );
+    const handleDelete = useCallback((event: any) => {
+        dispatch(removeDataSet(
+            'customArchetypeTalents',
+            customArchetypeTalents[event.target.name].id
+        ));
         event.preventDefault();
-    };
+    }, [customArchetypeTalents, dispatch]);
 
-    public handleClose = () => {
-        this.initState();
-        this.props.handleClose();
-    };
+    const handleCloseWrapper = useCallback(() => {
+        initState();
+        handleClose();
+    }, [initState, handleClose]);
 
-    public handleEdit = event => {
-        const { customArchetypeTalents } = this.props;
+    const handleEdit = useCallback((event: any) => {
         const talent = customArchetypeTalents[event.target.name];
-        this.setState({
+        setState({
             setting:
                 typeof talent.setting === 'string'
                     ? talent.setting.split(', ')
@@ -93,246 +110,219 @@ class CustomArchetypeTalentsComponent extends React.Component<any, any> {
             mode: 'edit',
             ...talent
         });
-    };
+    }, [customArchetypeTalents]);
 
-    public render() {
-        const { customArchetypeTalents, skills } = this.props;
-        const {
-            name,
-            tier,
-            ranked,
-            activation,
-            turn,
-            description,
-            setting,
-            modifier,
-            modifierValue,
-            mode
-        } = this.state;
-        return (
-            <div>
+    return (
+        <div>
+            <Fragment
+                type="text"
+                title="name"
+                value={name}
+                mode={mode}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, name: event.target.value }))
+                }
+            />
+
+            <Fragment
+                type="setting"
+                setting={setting}
+                setState={selected => setState((prev: any) => ({ ...prev, setting: selected }))}
+            />
+
+            <Fragment
+                type="inputSelect"
+                title="activation"
+                array={[true, false]}
+                nameObj={{
+                    true: { name: 'Active' },
+                    false: { name: 'Passive' }
+                }}
+                value={activation}
+                handleChange={event =>
+                    setState((prev: any) => ({
+                        ...prev,
+                        activation: JSON.parse(event.target.value)
+                    }))
+                }
+            />
+
+            {activation && (
                 <Fragment
                     type="text"
-                    title="name"
-                    value={name}
-                    mode={mode}
+                    title="turn"
+                    value={turn}
                     handleChange={event =>
-                        this.setState({ name: event.target.value })
+                        setState((prev: any) => ({ ...prev, turn: event.target.value }))
                     }
                 />
+            )}
 
-                <Fragment
-                    type="setting"
-                    setting={setting}
-                    setState={selected => this.setState({ setting: selected })}
-                />
+            <Fragment
+                type="description"
+                value={description}
+                handleChange={event =>
+                    setState((prev: any) => ({ ...prev, description: event.target.value }))
+                }
+            />
 
+            <Fragment
+                type="inputSelect"
+                title="modifier"
+                array={[true, false]}
+                nameObj={{ true: { name: 'Yes' }, false: { name: 'No' } }}
+                value={modifier}
+                blankOption={false}
+                handleChange={event =>
+                    setState((prev: any) => ({
+                        ...prev,
+                        modifier: JSON.parse(event.target.value),
+                        modifierValue: ''
+                    }))
+                }
+            />
+
+            {modifier && (
                 <Fragment
                     type="inputSelect"
-                    title="activation"
-                    array={[true, false]}
-                    nameObj={{
-                        true: { name: 'Active' },
-                        false: { name: 'Passive' }
-                    }}
-                    value={activation}
-                    handleChange={event =>
-                        this.setState({
-                            activation: JSON.parse(event.target.value)
-                        })
-                    }
-                />
-
-                {activation && (
-                    <Fragment
-                        type="text"
-                        title="turn"
-                        value={turn}
-                        handleChange={event =>
-                            this.setState({ turn: event.target.value })
-                        }
-                    />
-                )}
-
-                <Fragment
-                    type="description"
-                    value={description}
-                    handleChange={event =>
-                        this.setState({ description: event.target.value })
-                    }
-                />
-
-                <Fragment
-                    type="inputSelect"
-                    title="modifier"
-                    array={[true, false]}
-                    nameObj={{ true: { name: 'Yes' }, false: { name: 'No' } }}
+                    title="Attribute"
                     value={modifier}
-                    blankOption={false}
+                    array={[
+                        'careerSkills',
+                        'defense',
+                        'meleeDefense',
+                        'strainThreshold',
+                        'soak',
+                        'rangedDefense',
+                        'woundThreshold'
+                    ].concat(Object.keys(skills))}
+                    nameObj={skills}
                     handleChange={event =>
-                        this.setState({
-                            modifier: JSON.parse(event.target.value),
+                        setState((prev: any) => ({
+                            ...prev,
+                            modifier: event.target.value,
                             modifierValue: ''
-                        })
+                        }))
                     }
                 />
+            )}
 
-                {modifier && (
+            {(modifiableAttributes.includes(modifier) ||
+                Object.keys(skills).includes(modifier)) &&
+                (modifier === 'careerSkills' ? (
                     <Fragment
                         type="inputSelect"
-                        title="Attribute"
-                        value={modifier}
-                        array={[
-                            'careerSkills',
-                            'defense',
-                            'meleeDefense',
-                            'strainThreshold',
-                            'soak',
-                            'rangedDefense',
-                            'woundThreshold'
-                        ].concat(Object.keys(skills))}
+                        title="modifierValue"
+                        value=""
+                        array={Object.keys(skills).filter(
+                            skill => !modifierValue.includes(skill)
+                        )}
                         nameObj={skills}
+                        handleChange={handleList}
+                    />
+                ) : modifiableAttributes.includes(modifier) ? (
+                    <Fragment
+                        type="number"
+                        value={modifierValue}
+                        title="modifierValue"
                         handleChange={event =>
-                            this.setState({
-                                modifier: event.target.value,
-                                modifierValue: ''
-                            })
+                            setState((prev: any) => ({
+                                ...prev,
+                                modifierValue: +event.target.value
+                            }))
                         }
                     />
-                )}
-
-                {(modifiableAttributes.includes(modifier) ||
-                    Object.keys(skills).includes(modifier)) &&
-                    (modifier === 'careerSkills' ? (
-                        <Fragment
-                            type="inputSelect"
-                            title="modifierValue"
-                            value=""
-                            array={Object.keys(skills).filter(
-                                skill => !modifierValue.includes(skill)
-                            )}
-                            nameObj={skills}
-                            handleChange={this.handleList}
-                        />
-                    ) : modifiableAttributes.includes(modifier) ? (
-                        <Fragment
-                            type="number"
-                            value={modifierValue}
-                            title="modifierValue"
-                            handleChange={event =>
-                                this.setState({
-                                    modifierValue: +event.target.value
-                                })
-                            }
-                        />
-                    ) : (
-                        <Fragment
-                            type="inputSelect"
-                            title="modifierValue"
-                            value=""
-                            nameObj={diceNames}
-                            array={[
-                                '[blue]',
-                                '[black]',
-                                '[rmblack]',
-                                '[success]',
-                                '[advantage]',
-                                '[failure]',
-                                '[threat]'
-                            ]}
-                            handleChange={this.handleList}
-                        />
-                    ))}
-
-                {Array.isArray(modifierValue) && (
+                ) : (
                     <Fragment
-                        type="list"
-                        title="modifierList"
-                        array={modifierValue}
-                        nameObj={{ ...skills, diceNames }}
-                        handleClear={() => this.setState({ modifierValue: [] })}
+                        type="inputSelect"
+                        title="modifierValue"
+                        value=""
+                        nameObj={diceNames}
+                        array={[
+                            '[blue]',
+                            '[black]',
+                            '[rmblack]',
+                            '[success]',
+                            '[advantage]',
+                            '[failure]',
+                            '[threat]'
+                        ]}
+                        handleChange={handleList}
                     />
-                )}
-                <hr />
-                <ControlButtonSet
-                    mode={this.state.mode}
-                    type={'Archetype Talents'}
-                    handleSubmit={this.handleSubmit}
-                    onEditSubmit={this.handleSubmit}
-                    onEditCancel={this.initState}
-                    disabled={
-                        name === '' ||
-                        tier === '' ||
-                        ranked === '' ||
-                        activation === ''
-                    }
+                ))}
+
+            {Array.isArray(modifierValue) && (
+                <Fragment
+                    type="list"
+                    title="modifierList"
+                    array={modifierValue}
+                    nameObj={{ ...skills, diceNames }}
+                    handleClear={() => setState((prev: any) => ({ ...prev, modifierValue: [] }))}
                 />
+            )}
+            <hr />
+            <ControlButtonSet
+                mode={mode}
+                type={'Archetype Talents'}
+                handleSubmit={handleSubmit}
+                onEditSubmit={handleSubmit}
+                onEditCancel={initState}
+                disabled={
+                    name === '' ||
+                    tier === '' ||
+                    ranked === '' ||
+                    activation === ''
+                }
+            />
 
-                <Table>
-                    <thead>
-                        <tr>
-                            <th>NAME</th>
-                            <th />
-                            <th />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {customArchetypeTalents &&
-                            Object.keys(customArchetypeTalents)
-                                .sort((a, b) =>
-                                    customArchetypeTalents[a].name >
-                                    customArchetypeTalents[b].name
-                                        ? 1
-                                        : -1
-                                )
-                                .map(key => (
-                                    <tr key={key}>
-                                        <td>
-                                            {customArchetypeTalents[key].name}
-                                        </td>
-                                        <td>
-                                            <ButtonGroup>
-                                                <Button
-                                                    name={key}
-                                                    onClick={this.handleEdit}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    name={key}
-                                                    onClick={
-                                                        this.handleDuplicate
-                                                    }
-                                                >
-                                                    Duplicate
-                                                </Button>
-                                                <DeleteButton
-                                                    name={key}
-                                                    onClick={this.handleDelete}
-                                                />
-                                            </ButtonGroup>
-                                        </td>
-                                    </tr>
-                                ))}
-                    </tbody>
-                </Table>
-            </div>
-        );
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        customArchetypeTalents: state.customArchetypeTalents,
-        archetypeTalents: state.archetypeTalents,
-        skills: state.skills
-    };
+            <Table>
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th />
+                        <th />
+                    </tr>
+                </thead>
+                <tbody>
+                    {customArchetypeTalents &&
+                        Object.keys(customArchetypeTalents)
+                            .sort((a, b) =>
+                                customArchetypeTalents[a].name >
+                                customArchetypeTalents[b].name
+                                    ? 1
+                                    : -1
+                            )
+                            .map(key => (
+                                <tr key={key}>
+                                    <td>
+                                        {customArchetypeTalents[key].name}
+                                    </td>
+                                    <td>
+                                        <ButtonGroup>
+                                            <Button
+                                                name={key}
+                                                onClick={handleEdit}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                name={key}
+                                                onClick={
+                                                    handleDuplicate
+                                                }
+                                            >
+                                                Duplicate
+                                            </Button>
+                                            <DeleteButton
+                                                name={key}
+                                                onClick={handleDelete}
+                                            />
+                                        </ButtonGroup>
+                                    </td>
+                                </tr>
+                            ))}
+                </tbody>
+            </Table>
+        </div>
+    );
 };
-
-const matchDispatchToProps = dispatch =>
-    bindActionCreators({ removeDataSet, addDataSet, modifyDataSet }, dispatch);
-
-export const CustomArchetypeTalents = connect(
-    mapStateToProps,
-    matchDispatchToProps
-)(CustomArchetypeTalentsComponent);

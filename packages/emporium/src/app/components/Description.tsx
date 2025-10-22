@@ -1,14 +1,18 @@
 import * as images from '@emporium/images';
-import React from 'react';
+import React, { useMemo } from 'react';
 
-export class Description extends React.Component<any, any> {
-    public checkText = () => {
-        if (this.props.text === null || this.props.text === undefined) {
-            return '';
+interface DescriptionProps {
+    text?: string | null;
+}
+
+export const Description = ({ text }: DescriptionProps) => {
+    const checkText = useMemo(() => {
+        if (text === null || text === undefined) {
+            return { __html: '' };
         }
 
-        const text = this.props.text.split(' ');
-        const array = text.map(word => {
+        const words = text.split(' ');
+        const array = words.map(word => {
             const target = word.toLowerCase();
             switch (true) {
                 case target.replace(/[,"'.?<>{}[\]]/g, '') === 'crb':
@@ -83,10 +87,7 @@ export class Description extends React.Component<any, any> {
             }
         });
         return { __html: final };
-    };
+    }, [text]);
 
-    public render() {
-      // @ts-ignore
-      return (<div className="m-auto" dangerouslySetInnerHTML={this.checkText()}/>);
-    }
-}
+    return <div className="m-auto" dangerouslySetInnerHTML={checkText} />;
+};
