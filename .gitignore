@@ -10,6 +10,10 @@
 
 # Dependencies
 /node_modules
+node_modules/
+apps/*/node_modules
+apps/*/dist
+apps/*/.next
 
 # IDEs and editors
 /.idea

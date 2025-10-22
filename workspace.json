@@ -20,7 +20,7 @@
             ],
             "styles": ["packages/emporium/src/styles.scss"],
             "scripts": [],
-            "webpackConfig": "@nrwl/react/plugins/webpack"
+            "webpackConfig": "packages/emporium/webpack.config.js"
           },
           "configurations": {
             "production": {

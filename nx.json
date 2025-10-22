@@ -1,43 +1,40 @@
 {
-  "npmScope": "genesys-emporium",
-  "affected": {
-    "defaultBase": "master"
-  },
-  "implicitDependencies": {
-    "workspace.json": "*",
-    "package.json": {
-      "dependencies": "*",
-      "devDependencies": "*"
+    "npmScope": "genesys-emporium",
+    "affected": {
+        "defaultBase": "master"
     },
-    "tsconfig.json": "*",
-    "tslint.json": "*",
-    "nx.json": "*"
-  },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "@nrwl/nx-cloud",
-      "options": {
-        "accessToken": "ZGY2MGRjMmQtMGVhOC00YjU3LWIzM2QtZjNlY2UzNTc4YjBlfHJlYWQtd3JpdGU=",
-        "cacheableOperations": ["build", "test", "lint", "e2e"],
-        "canTrackAnalytics": false,
-        "showUsageWarnings": true
-      }
+    "implicitDependencies": {
+        "workspace.json": "*",
+        "package.json": {
+            "dependencies": "*",
+            "devDependencies": "*"
+        },
+        "tsconfig.json": "*",
+        "tslint.json": "*",
+        "nx.json": "*"
+    },
+    "tasksRunnerOptions": {
+        "default": {
+            "runner": "@nrwl/workspace/tasks-runners/default",
+            "options": {
+                "cacheableOperations": ["build", "test", "lint", "e2e"]
+            }
+        }
+    },
+    "projects": {
+        "emporium": {
+            "tags": []
+        },
+        "emporium-e2e": {
+            "tags": [],
+            "implicitDependencies": ["emporium"]
+        },
+        "ui": {
+            "tags": []
+        }
+    },
+    "workspaceLayout": {
+        "appsDir": "packages",
+        "libsDir": "packages"
     }
-  },
-  "projects": {
-    "emporium": {
-      "tags": []
-    },
-    "emporium-e2e": {
-      "tags": [],
-      "implicitDependencies": ["emporium"]
-    },
-    "ui": {
-      "tags": []
-    }
-  },
-  "workspaceLayout": {
-    "appsDir": "packages",
-    "libsDir": "packages"
-  }
 }
