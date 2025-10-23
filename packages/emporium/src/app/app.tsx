@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { Container } from 'reactstrap';
 import './app.scss';
-import { DataPage, Loading, MainPage, User, VehicleSelect } from './components';
+import { DataPage, DiscordLogin, Loading, MainPage, User, VehicleSelect } from './components';
 import { CustomData } from './components/CustomData';
 
 declare const window: any;
@@ -37,13 +37,7 @@ export const App = () => {
             ReactGA.pageview(window.location.pathname);
         }
 
-        // TODO: Replace with FeathersJS authentication
-        // For now, use a temporary user ID for development
-        const tempUserId = 1; // This should be the actual user ID after login
-        dispatch(changeUser(tempUserId));
         setLoading(false);
-
-        const unsubscribe = () => {}; // Placeholder cleanup function
 
         // Register service worker
         if ('serviceWorker' in (window?.navigator || {})) {
@@ -60,8 +54,6 @@ export const App = () => {
         } else {
             console.warn('Service worker is not supported');
         }
-
-        return () => unsubscribe();
     }, [dispatch]);
 
     // Handle user changes
@@ -103,7 +95,11 @@ export const App = () => {
     }
 
     if (!user) {
-        return <User />;
+        return <DiscordLogin onLogin={(userId) => {
+            dispatch(changeUser(userId));
+            dispatch(loadCharacterList());
+            dispatch(loadDataSets());
+        }} />;
     }
 
     if (loadingData) {

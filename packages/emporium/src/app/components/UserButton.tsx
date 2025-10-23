@@ -1,8 +1,6 @@
 import { changeUser } from '@emporium/actions';
-// Firebase auth removed - TODO: implement FeathersJS authentication
-// import firebase from '@firebase/app';
-// import '@firebase/auth';
-import React, { useCallback } from 'react';
+import { userService } from '../../api/client';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from 'reactstrap';
 
@@ -11,25 +9,43 @@ interface UserButtonProps {}
 export const UserButton = ({}: UserButtonProps) => {
     const dispatch = useDispatch();
     const user = useSelector((state: any) => state.user);
+    const [username, setUsername] = useState<string>('User');
 
-    const getName = useCallback(() => {
-        // TODO: Get actual user name from FeathersJS API
-        return 'Dev User (ID: ' + user + ')';
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userData = await userService().get(user);
+                setUsername(userData.username || userData.email || `User ${user}`);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                setUsername(`User ${user}`);
+            }
+        };
+
+        if (user) {
+            fetchUserData();
+        }
     }, [user]);
 
-    const handleClick = useCallback(async () => {
-        // TODO: Implement FeathersJS sign out
+    const handleLogout = useCallback(async () => {
+        // Remove JWT token from localStorage
+        localStorage.removeItem('feathers-jwt');
+
+        // Reset user state
         dispatch(changeUser(null));
+
+        // Reload the page to reset all state
+        window.location.reload();
     }, [dispatch]);
 
     return (
         <UncontrolledButtonDropdown>
             <DropdownToggle caret size="sm">
-                {getName()}
+                {username}
             </DropdownToggle>
             <DropdownMenu>
-                <DropdownItem onClick={handleClick}>
-                    Sign Out (disabled)
+                <DropdownItem onClick={handleLogout}>
+                    Sign Out
                 </DropdownItem>
             </DropdownMenu>
         </UncontrolledButtonDropdown>

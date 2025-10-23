@@ -4,6 +4,7 @@ import { characters } from './characters/characters.service';
 import { characterData } from './character-data/character-data.service';
 import { userSettings } from './user-settings/user-settings.service';
 import { vehicles, vehicleData } from './vehicles/vehicles.service';
+import { discordAuth } from './discord-auth/discord-auth.service';
 import {
   customArchetypes,
   customArchetypeTalents,
@@ -24,6 +25,7 @@ export const services = (app: Application) => {
   app.configure(characters);
   app.configure(characterData);
   app.configure(userSettings);
+  app.configure(discordAuth);
 
   // Vehicle services
   app.configure(vehicles);

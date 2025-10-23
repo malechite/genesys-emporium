@@ -18,6 +18,7 @@
     "@feathersjs/socketio": "^5.0.29",
     "@feathersjs/authentication": "^5.0.29",
     "@feathersjs/authentication-local": "^5.0.29",
+    "@feathersjs/authentication-oauth": "^5.0.29",
     "@feathersjs/errors": "^5.0.29",
     "@koa/bodyparser": "^5.1.1",
     "knex": "^3.1.0",

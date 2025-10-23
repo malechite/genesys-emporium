@@ -11,6 +11,7 @@ export { CharacterSelect } from './CharacterSelect';
 export { Critical } from './critical/critical';
 export { DataPage } from './DataPage';
 export { Description } from './Description';
+export { DiscordLogin } from './DiscordLogin';
 export { ErrorBoundary } from './ErrorBoundary';
 export { Equipment } from './Equipment';
 export { Gear } from './gear/gear';
