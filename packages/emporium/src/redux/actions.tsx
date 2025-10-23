@@ -23,8 +23,30 @@ import { upperFirst } from 'lodash-es';
 
 // TODO: Replace Firebase auth with FeathersJS authentication
 export const writeUser = () => {
-    // Temporary stub - needs proper auth implementation
-    console.log('writeUser: Firebase auth has been removed, needs FeathersJS auth implementation');
+    return async (dispatch, getState) => {
+        const userId = getState().user;
+
+        if (!userId) {
+            console.warn('writeUser: No user ID available');
+            return;
+        }
+
+        try {
+            // Check if user exists, create if not
+            const users = await userService().find({ query: { id: userId } });
+
+            if (users.total === 0) {
+                // Create new user with temp credentials
+                await userService().create({
+                    id: userId,
+                    email: `user${userId}@temp.local`,
+                    username: `user${userId}`
+                });
+            }
+        } catch (error) {
+            console.error('Error in writeUser:', error);
+        }
+    };
 };
 
 export const changeData = (data, type, merge = true) => {

@@ -31,8 +31,11 @@ export const App = () => {
 
     // Initialize app and register service worker
     useEffect(() => {
-        ReactGA.initialize(process.env.NX_gaID);
-        ReactGA.pageview(window.location.pathname);
+        // Only enable Google Analytics in production
+        if (process.env.NODE_ENV === 'production' && process.env.NX_gaID) {
+            ReactGA.initialize(process.env.NX_gaID);
+            ReactGA.pageview(window.location.pathname);
+        }
 
         // TODO: Replace with FeathersJS authentication
         // For now, use a temporary user ID for development
