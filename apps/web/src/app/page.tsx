@@ -1,5 +1,52 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import client from '@/lib/feathers';
+
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030';
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('feathers-jwt');
+
+        if (token) {
+          // Try to authenticate with the stored token
+          await client.authenticate({
+            strategy: 'jwt',
+            accessToken: token
+          });
+
+          // If successful, redirect to dashboard
+          router.push('/dashboard');
+          return;
+        }
+      } catch (error) {
+        // Token is invalid or expired, clear it
+        console.log('No valid token found, showing login');
+        localStorage.removeItem('feathers-jwt');
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-800">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-zinc-300">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-800">

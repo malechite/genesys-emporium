@@ -1,8 +1,0 @@
-   [1m[38;2;173;127;168m▲ Next.js 16.0.0[39m[22m (Turbopack)
-   - Local:        http://localhost:3000
-   - Network:      http://192.168.69.221:3000
-   - Environments: .env.local
-
- [32m[1m✓[22m[39m Starting...
- [32m[1m✓[22m[39m Ready in 363ms
- GET / [32m200[39m in 1235ms[2m (compile: 1148ms, render: 87ms)[22m
