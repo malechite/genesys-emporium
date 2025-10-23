@@ -1,124 +1,136 @@
 import { customDataTypes, dataTypes, vehicleDataTypes } from '@emporium/data';
-import { db } from '@emporium/firestoreDb';
-import firebase from '@firebase/app';
-import '@firebase/auth';
+import apiClient, {
+    userService,
+    characterService,
+    characterDataService,
+    userSettingsService,
+    customArchetypesService,
+    customArchetypeTalentsService,
+    customArmorService,
+    customCareersService,
+    customGearService,
+    customMotivationsService,
+    customSettingsService,
+    customSkillsService,
+    customTalentsService,
+    customVehiclesService,
+    customWeaponsService,
+    vehicleService,
+    vehicleDataService
+} from '../api/client';
 import clone from 'clone';
 import { upperFirst } from 'lodash-es';
 
+// TODO: Replace Firebase auth with FeathersJS authentication
 export const writeUser = () => {
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            const data = {
-                name: user.displayName,
-                email: user.email,
-                uid: user.uid,
-                phone: user.phoneNumber,
-                lastLogin: new Date()
-            };
-
-            db.doc(`userDB/${user.uid}`).set(data).catch(console.error);
-        }
-    });
+    // Temporary stub - needs proper auth implementation
+    console.log('writeUser: Firebase auth has been removed, needs FeathersJS auth implementation');
 };
 
 export const changeData = (data, type, merge = true) => {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const { user, character } = getState();
-        const dbRef = db.doc(
-            `users/${user}/data/characters/${character}/${type}/`
-        );
 
-        dbRef.set({ data }, { merge: merge });
-        dispatch({ type: `${type}_Changed`, payload: data });
+        try {
+            // Use character-data service with upsert
+            await characterDataService().create({
+                character_id: character,
+                data_type: type,
+                data: data
+            });
+
+            dispatch({ type: `${type}_Changed`, payload: data });
+        } catch (error) {
+            console.error('Error changing data:', error);
+        }
     };
 };
 
 export const loadData = () => {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         dispatch({ type: 'loadingData_Changed', payload: true });
         const { user, character } = getState();
-        db.doc(`users/${user}/data/settings`).set({ lastCharacter: character }, {
-            merge: true
-        });
 
-        const unsub = {};
-        dataTypes.forEach((type, index) => {
-            unsub[type] = db
-                .doc(`users/${user}/data/characters/${character}/${type}/`)
-                .onSnapshot(
-                    doc => {
-                        let payload = null;
-                        if (doc.exists) {
-                            payload = doc.data().data;
-                        }
+        try {
+            // Update user settings with last character
+            await userSettingsService().create({
+                user_id: user,
+                last_character_id: character
+            });
 
-                        dispatch({ type: `${type}_Changed`, payload: payload });
-                        if (index + 1 >= dataTypes.length) {
-                            dispatch({
-                                type: 'loadingData_Changed',
-                                payload: false
-                            });
-                        }
-                    },
-                    error => {
-                        if (!getState().user) {
-                            unsub[type]();
-                        } else {
-                            console.error(error);
-                        }
-                    }
-                );
-        });
+            // Load all character data
+            const response = await characterDataService().find({
+                query: { character_id: character }
+            });
+
+            // Dispatch each data type
+            dataTypes.forEach((type) => {
+                const item = response.data.find(d => d.data_type === type);
+                const payload = item ? item.data : null;
+                dispatch({ type: `${type}_Changed`, payload });
+            });
+
+            dispatch({ type: 'loadingData_Changed', payload: false });
+        } catch (error) {
+            console.error('Error loading data:', error);
+            dispatch({ type: 'loadingData_Changed', payload: false });
+        }
     };
 };
 
 export const loadCharacterList = () => {
-    return (dispatch, getState) => {
-        const user = getState().user;
-        const unsub = db.doc(`users/${user}/data/characterList`).onSnapshot(
-            doc => {
-                const character = getState().character;
-                let key;
-                let newObj = null;
-                if (!doc.exists) {
-                    key = Math.random().toString(36).substr(2, 16);
-                    newObj = { [key]: 'New Character' };
-                    db.doc(`users/${user}/data/characterList`).set(newObj, {
-                        merge: true
-                    });
-                } else {
-                    const list = Object.keys(doc.data()).sort((a, b) =>
-                        doc.data()[a] < doc.data()[b]
-                            ? -1
-                            : doc.data()[a] > doc.data()[b]
-                            ? 1
-                            : 0
-                    );
+    return async (dispatch, getState) => {
+        const userId = getState().user;
 
-                    dispatch({
-                        type: `characterList_Changed`,
-                        payload: doc.data()
-                    });
+        try {
+            // Load characters for this user
+            const response = await characterService().find({
+                query: { user_id: userId }
+            });
 
-                    if (!character) {
-                        db.doc(`users/${user}/data/settings`).onSnapshot(
-                            doc => {
-                                dispatch({
-                                    type: `character_Changed`,
-                                    payload: doc.data()?.lastCharacter || list[0]
-                                });
-                            });
+            if (response.data.length === 0) {
+                // Create a new character if none exist
+                const newChar = await characterService().create({
+                    user_id: userId,
+                    name: 'New Character',
+                    data: {}
+                });
+
+                dispatch({
+                    type: 'characterList_Changed',
+                    payload: { [newChar.id]: newChar.name }
+                });
+                dispatch({ type: 'character_Changed', payload: newChar.id });
+            } else {
+                // Convert array to object keyed by ID
+                const characterList = response.data.reduce((acc, char) => {
+                    acc[char.id] = char.name;
+                    return acc;
+                }, {});
+
+                dispatch({
+                    type: 'characterList_Changed',
+                    payload: characterList
+                });
+
+                // Load last selected character or first one
+                const currentCharacter = getState().character;
+                if (!currentCharacter) {
+                    try {
+                        const settings = await userSettingsService().find({
+                            query: { user_id: userId }
+                        });
+
+                        const lastCharacterId = settings.data[0]?.last_character_id || response.data[0].id;
+                        dispatch({ type: 'character_Changed', payload: lastCharacterId });
+                    } catch (error) {
+                        dispatch({ type: 'character_Changed', payload: response.data[0].id });
                     }
                 }
-            },
-            error => {
-                if (!getState().user) {
-                    unsub();
-                } else {
-                    console.error(error);
-                }
             }
-        );
+        } catch (error) {
+            console.error('Error loading character list:', error);
+        }
     };
 };
 
@@ -133,55 +145,72 @@ export const changeCharacter = state => {
 };
 
 export const addCharacter = () => {
-    return (dispatch, getState) => {
-        const user = getState().user;
+    return async (dispatch, getState) => {
+        const userId = getState().user;
         dispatch({ type: 'loading_Changed', payload: true });
-        const newCharacter = Math.random().toString(36).substr(2, 16);
-        db.doc(`users/${user}/data/characterList`).update({
-            [newCharacter]: 'New Character'
-        });
 
-        dispatch({ type: `character_Changed`, payload: newCharacter });
+        try {
+            const newChar = await characterService().create({
+                user_id: userId,
+                name: 'New Character',
+                data: {}
+            });
+
+            dispatch({ type: 'character_Changed', payload: newChar.id });
+            dispatch({ type: 'loading_Changed', payload: false });
+        } catch (error) {
+            console.error('Error adding character:', error);
+            dispatch({ type: 'loading_Changed', payload: false });
+        }
     };
 };
 
 export const deleteCharacter = () => {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         dispatch({ type: 'loading_Changed', payload: true });
-        const user = getState().user;
-        const character = getState().character;
+        const userId = getState().user;
+        const characterId = getState().character;
         const characterList = { ...getState().characterList };
-        delete characterList[character];
-        dataTypes.forEach(type =>
-            db
-                .doc(`users/${user}/data/characters/${character}/${type}`)
-                .delete()
-        );
 
-        if (Object.keys(characterList).length === 0) {
-            const newCharacter = Math.random().toString(36).substr(2, 16);
-            db.doc(`users/${user}/data/characterList`).set({
-                [newCharacter]: 'New Character'
-            });
+        try {
+            // Delete the character (cascade will delete character_data)
+            await characterService().remove(characterId);
 
-            dispatch({ type: `character_Changed`, payload: newCharacter });
-        } else {
-            db.doc(`users/${user}/data/characterList`).set(characterList);
-            dispatch({
-                type: `character_Changed`,
-                payload: Object.keys(characterList)[0]
-            });
+            delete characterList[characterId];
+
+            if (Object.keys(characterList).length === 0) {
+                // Create a new character if none left
+                const newChar = await characterService().create({
+                    user_id: userId,
+                    name: 'New Character',
+                    data: {}
+                });
+
+                dispatch({ type: 'character_Changed', payload: newChar.id });
+            } else {
+                dispatch({
+                    type: 'character_Changed',
+                    payload: Object.keys(characterList)[0]
+                });
+            }
+
+            dispatch({ type: 'loading_Changed', payload: false });
+        } catch (error) {
+            console.error('Error deleting character:', error);
+            dispatch({ type: 'loading_Changed', payload: false });
         }
     };
 };
 
 export const changeCharacterName = data => {
-    return (dispatch, getState) => {
-        const user = getState().user;
-        const character = getState().character;
-        db.doc(`users/${user}/data/characterList`).update({
-            [character]: data
-        });
+    return async (dispatch, getState) => {
+        const characterId = getState().character;
+
+        try {
+            await characterService().patch(characterId, { name: data });
+        } catch (error) {
+            console.error('Error changing character name:', error);
+        }
     };
 };
 
@@ -191,219 +220,248 @@ export const changePrintContent = state => {
     };
 };
 
-export const importCharacter = (characterImport, user) => {
-    return () => {
-        const key = Math.random().toString(36).substr(2, 16);
-        db.doc(`users/${user}/data/characterList`).update({
-            [key]: characterImport.name
-        });
+export const importCharacter = (characterImport, userId) => {
+    return async () => {
+        try {
+            // Create new character
+            const newChar = await characterService().create({
+                user_id: userId,
+                name: characterImport.name,
+                data: {}
+            });
 
-        Object.keys(characterImport).forEach(type => {
-            const data = characterImport[type];
-            if (type !== 'name') {
-                db.doc(`users/${user}/data/characters/${key}/${type}/`).set({
-                    data
-                });
-            }
-        });
+            // Import all character data
+            const dataPromises = Object.keys(characterImport)
+                .filter(type => type !== 'name')
+                .map(type =>
+                    characterDataService().create({
+                        character_id: newChar.id,
+                        data_type: type,
+                        data: characterImport[type]
+                    })
+                );
+
+            await Promise.all(dataPromises);
+        } catch (error) {
+            console.error('Error importing character:', error);
+        }
     };
+};
+
+const customDataTypeToService = {
+    customArchetypes: customArchetypesService,
+    customArchetypeTalents: customArchetypeTalentsService,
+    customArmor: customArmorService,
+    customCareers: customCareersService,
+    customGear: customGearService,
+    customMotivations: customMotivationsService,
+    customSettings: customSettingsService,
+    customSkills: customSkillsService,
+    customTalents: customTalentsService,
+    customVehicles: customVehiclesService,
+    customWeapons: customWeaponsService
 };
 
 export const importCustomData = customDataSetImport => {
-    return (dispatch, getState) => {
-        Object.keys(customDataSetImport).forEach(type => {
-            const data = clone(customDataSetImport[type]);
-            switch (type) {
-                case 'customArchetypes':
-                    Object.values(data).forEach((item: any) => {
-                        const { characteristics, ...obj } = item;
-                        let final = {
-                            write: [getState().user],
-                            read: [getState().user],
-                            name: 'none'
-                        };
+    return async (dispatch, getState) => {
+        const userId = getState().user;
 
-                        if (item) {
-                            final = { ...final, ...obj, ...characteristics };
-                        }
+        for (const [type, data] of Object.entries(customDataSetImport)) {
+            const service = customDataTypeToService[type];
+            if (!service) continue;
 
-                        db.collection(`${type}DB`)
-                            .add(final)
-                            .catch(console.error);
-                    });
+            const dataClone = clone(data);
 
-                    break;
-                case 'customMotivations':
-                case 'customArchetypeTalents':
-                case 'customArmor':
-                case 'customCareers':
-                case 'customGear':
-                case 'customSkills':
-                case 'customTalents':
-                case 'customVehicles':
-                case 'customWeapons':
-                    Object.values(data).forEach((item: any) => {
+            try {
+                if (type === 'customArchetypes') {
+                    // Special handling for archetypes
+                    for (const item of Object.values(dataClone)) {
+                        const { characteristics, ...obj } = item as any;
                         const final = {
-                            write: [getState().user],
-                            read: [getState().user],
-                            name: 'none',
-                            ...item
+                            user_id: userId,
+                            name: item.name || 'none',
+                            data: { ...obj, ...characteristics },
+                            read_access: [userId],
+                            write_access: [userId]
                         };
-
-                        db.collection(`${type}DB`)
-                            .add(final)
-                            .catch(console.error);
-                    });
-
-                    break;
-                default:
-                    break;
+                        await service().create(final);
+                    }
+                } else {
+                    // Standard handling for other types
+                    for (const item of Object.values(dataClone)) {
+                        const final = {
+                            user_id: userId,
+                            name: (item as any).name || 'none',
+                            data: item,
+                            read_access: [userId],
+                            write_access: [userId]
+                        };
+                        await service().create(final);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error importing ${type}:`, error);
             }
-        });
+        }
     };
 };
 
-//new database structure stuffs
 export const addDataSet = (type, data = {}) => {
-    return (dispatch, getState) => {
-        const final = {
-            write: [getState().user],
-            read: [getState().user],
-            name: 'none',
-            ...data
-        };
+    return async (dispatch, getState) => {
+        const userId = getState().user;
+        const service = customDataTypeToService[type];
 
-        db.collection(`${type}DB`).add(final).catch(console.error);
+        if (!service) {
+            console.error(`Unknown custom data type: ${type}`);
+            return;
+        }
+
+        try {
+            const final = {
+                user_id: userId,
+                name: data.name || 'none',
+                data: data,
+                read_access: [userId],
+                write_access: [userId]
+            };
+
+            await service().create(final);
+        } catch (error) {
+            console.error(`Error adding ${type}:`, error);
+        }
     };
 };
 
 export const removeDataSet = (type, key) => {
-    return () => {
-        const list = type === 'vehicle' ? vehicleDataTypes : [];
-        list.forEach(dataType =>
-            db.doc(`${type}DB/${key}/data/${dataType}`).delete()
-        );
-
-        db.doc(`${type}DB/${key}/`).delete();
+    return async () => {
+        try {
+            if (type === 'vehicle') {
+                // Delete vehicle (cascade will delete vehicle_data)
+                await vehicleService().remove(key);
+            } else {
+                const service = customDataTypeToService[type];
+                if (service) {
+                    await service().remove(key);
+                }
+            }
+        } catch (error) {
+            console.error(`Error removing ${type}:`, error);
+        }
     };
 };
 
 export const modifyDataSet = (type, { id, ...data }) => {
-    return () => db.doc(`${type}DB/${id}/`).set(data);
-};
-
-export const loadDataSets = () => {
-    return (dispatch, getState) => {
-        const user = getState().user;
-        [...customDataTypes, 'vehicle'].forEach(type => {
-            db.collection(`${type}DB`)
-                .where('read', 'array-contains', user)
-                .onSnapshot(querySnapshot => {
-                    querySnapshot.docChanges().forEach(change => {
-                        if (type.includes('custom')) {
-                            switch (change.type) {
-                                case 'added':
-                                case 'modified':
-                                    dispatch({
-                                        type: `${type}_${upperFirst(
-                                            change.type
-                                        )}`,
-                                        payload: {
-                                            ...change.doc.data(),
-                                            id: change.doc.id
-                                        }
-                                    });
-
-                                    break;
-                                case 'removed':
-                                    dispatch({
-                                        type: `${type}_Removed`,
-                                        payload: change.doc.id
-                                    });
-
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } else {
-                            switch (change.type) {
-                                case 'added':
-                                    dispatch({
-                                        type: `${type}DataSet_Added`,
-                                        payload: {
-                                            [change.doc.id]: change.doc.data()
-                                        }
-                                    });
-
-                                    dispatch({
-                                        type: `${type}_Changed`,
-                                        payload: change.doc.id
-                                    });
-
-                                    break;
-                                case 'removed':
-                                    dispatch({
-                                        type: `${type}DataSet_Removed`,
-                                        payload: change.doc.id
-                                    });
-
-                                    dispatch({
-                                        type: `${type}_Changed`,
-                                        payload: querySnapshot.docs[0]
-                                            ? querySnapshot.docs[0].id
-                                            : ''
-                                    });
-
-                                    break;
-                                case 'modified':
-                                    dispatch({
-                                        type: `${type}DataSet_Modified`,
-                                        payload: {
-                                            ...change.doc.data(),
-                                            id: change.doc.id
-                                        }
-                                    });
-
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    });
-                }, console.error);
-        });
+    return async () => {
+        try {
+            if (type === 'vehicle') {
+                await vehicleService().patch(id, data);
+            } else {
+                const service = customDataTypeToService[type];
+                if (service) {
+                    await service().patch(id, data);
+                }
+            }
+        } catch (error) {
+            console.error(`Error modifying ${type}:`, error);
+        }
     };
 };
 
+export const loadDataSets = () => {
+    return async (dispatch, getState) => {
+        const userId = getState().user;
+
+        try {
+            // Load all custom data types
+            for (const type of customDataTypes) {
+                const service = customDataTypeToService[type];
+                if (!service) continue;
+
+                const response = await service().find({
+                    query: { readable_by: userId }
+                });
+
+                // Convert to object keyed by ID
+                const dataSet = response.data.reduce((acc, item) => {
+                    acc[item.id] = { ...item.data, id: item.id, name: item.name };
+                    return acc;
+                }, {});
+
+                dispatch({ type: `${type}_Changed`, payload: dataSet });
+            }
+
+            // Load vehicles
+            const vehicles = await vehicleService().find({
+                query: { user_id: userId }
+            });
+
+            const vehicleData = vehicles.data.reduce((acc, item) => {
+                acc[item.id] = { ...item.data, id: item.id, name: item.name };
+                return acc;
+            }, {});
+
+            dispatch({ type: 'vehicle_Changed', payload: vehicleData });
+        } catch (error) {
+            console.error('Error loading data sets:', error);
+        }
+    };
+};
+
+// Vehicle-specific actions
 export const changeReduxState = (data, type) => {
     return { type: `${type}_Changed`, payload: data };
 };
 
 export const changeFieldData = (type, key, data, field) => {
-    return () => db.doc(`${type}DB/${key}/`).update({ [field]: data });
+    return async () => {
+        try {
+            if (type === 'vehicle') {
+                await vehicleService().patch(key, { [field]: data });
+            } else {
+                const service = customDataTypeToService[type];
+                if (service) {
+                    await service().patch(key, { [field]: data });
+                }
+            }
+        } catch (error) {
+            console.error(`Error changing field data for ${type}:`, error);
+        }
+    };
 };
 
 export const changeDocData = (type, key, dataType, data) => {
-    return () => db.doc(`${type}DB/${key}/data/${dataType}`).set({ data });
+    return async () => {
+        try {
+            if (type === 'vehicle') {
+                await vehicleDataService().create({
+                    vehicle_id: key,
+                    data_type: dataType,
+                    data: data
+                });
+            }
+        } catch (error) {
+            console.error(`Error changing doc data for ${type}:`, error);
+        }
+    };
 };
 
 export const loadDoc = (type, key) => {
-    return dispatch => {
-        vehicleDataTypes.forEach(dataType => {
-            if (key) {
-                const res = db.doc(`${type}DB/${key}/data/${dataType}`).onSnapshot(doc => {
-                    if (doc.data()) {
-                        dispatch({
-                            type: `${dataType}_Changed`,
-                            payload: doc.data().data
-                        });
-                    } else {
-                        dispatch({ type: `${dataType}_Changed` });
-                    }
-                }, console.error);
-            } else {
-                dispatch({ type: `${dataType}_Changed` });
+    return async (dispatch) => {
+        try {
+            if (type === 'vehicle' && key) {
+                const response = await vehicleDataService().find({
+                    query: { vehicle_id: key }
+                });
+
+                response.data.forEach(item => {
+                    dispatch({
+                        type: `${item.data_type}_Changed`,
+                        payload: item.data
+                    });
+                });
             }
-        });
+        } catch (error) {
+            console.error(`Error loading doc for ${type}:`, error);
+        }
     };
 };

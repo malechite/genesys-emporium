@@ -1,37 +1,18 @@
-import { firebase } from '@firebase/app';
-import '@firebase/auth';
-import * as firebaseui from "firebaseui";
-import React, { useMemo } from 'react';
-import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-import { Container, Row } from 'reactstrap';
+// Firebase authentication UI removed - TODO: implement FeathersJS authentication
+// import { firebase } from '@firebase/app';
+// import '@firebase/auth';
+// import * as firebaseui from "firebaseui";
+import React from 'react';
+// import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+import { Container, Row, Button } from 'reactstrap';
 import * as images from '@emporium/images';
 import { About } from './About';
 
 interface UserProps {}
 
 export const User = ({}: UserProps) => {
-    const uiConfig = useMemo(() => ({
-        signInFlow: 'popup',
-        autoUpgradeAnonymousUsers: true,
-        callbacks: {
-            signInFailure: console.error,
-            onAuthStateChanged: console.log
-        },
-        signInOptions: [
-            firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-            {
-                provider: firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-                // Invisible reCAPTCHA with image challenge and bottom left badge.
-                recaptchaParameters: {
-                    type: 'image',
-                    size: 'invisible',
-                    badge: 'bottomleft'
-                }
-            },
-            firebase.auth.EmailAuthProvider.PROVIDER_ID,
-            firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
-        ]
-    }), []);
+    // TODO: Implement FeathersJS authentication
+    // For now, show a placeholder message
 
     return (
         <div>
@@ -51,10 +32,11 @@ export const User = ({}: UserProps) => {
                     />
                 </Row>
                 <Row className="justify-content-center my-2">
-                    <StyledFirebaseAuth
-                        uiConfig={uiConfig}
-                        firebaseAuth={firebase.auth()}
-                    />
+                    <div className="alert alert-info">
+                        <h4>Authentication Temporarily Disabled</h4>
+                        <p>Firebase authentication has been removed. FeathersJS authentication will be implemented soon.</p>
+                        <p>For now, you're automatically logged in as a development user.</p>
+                    </div>
                 </Row>
                 <Row className="justify-content-center">
                     <About />

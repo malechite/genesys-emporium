@@ -9,7 +9,7 @@ import {
 import React, { useCallback, useState } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, ButtonGroup, Col, Input, InputGroupAddon, Label, Row } from 'reactstrap';
+import { Button, ButtonGroup, Col, Input, Label, Row } from 'reactstrap';
 import { Archetype } from './Archetype';
 import { Career } from './Career';
 import { ModalDeleteConfirm } from './ModalDeleteConfirm';
@@ -100,26 +100,21 @@ export const CharacterSelect = ({}: CharacterSelectProps) => {
                                 ))}
                     </Input>
                 </Col>
-                <Col>
-                    <InputGroupAddon
-                        addonType="append"
-                        className="justify-content-end"
-                    >
-                        <ButtonGroup>
-                            <Button
-                                onClick={() => dispatch(addCharacter())}
-                            >
-                                New
-                            </Button>
-                            <Button
-                                onClick={() =>
-                                    setDeleteModal(true)
-                                }
-                            >
-                                Delete
-                            </Button>
-                        </ButtonGroup>
-                    </InputGroupAddon>
+                <Col className="d-flex justify-content-end">
+                    <ButtonGroup>
+                        <Button
+                            onClick={() => dispatch(addCharacter())}
+                        >
+                            New
+                        </Button>
+                        <Button
+                            onClick={() =>
+                                setDeleteModal(true)
+                            }
+                        >
+                            Delete
+                        </Button>
+                    </ButtonGroup>
                 </Col>
             </Row>
             <hr />

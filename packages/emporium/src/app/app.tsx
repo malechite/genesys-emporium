@@ -1,6 +1,7 @@
 import { changeUser, loadCharacterList, loadData, loadDataSets, loadDoc, writeUser } from '@emporium/actions';
-import firebase from '@firebase/app';
-import '@firebase/auth';
+// Firebase auth removed - TODO: implement FeathersJS authentication
+// import firebase from '@firebase/app';
+// import '@firebase/auth';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactGA from 'react-ga';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,12 +34,13 @@ export const App = () => {
         ReactGA.initialize(process.env.NX_gaID);
         ReactGA.pageview(window.location.pathname);
 
-        const unsubscribe = firebase.auth().onAuthStateChanged(authUser => {
-            if (authUser) {
-                dispatch(changeUser(authUser.uid));
-            }
-            setLoading(false);
-        });
+        // TODO: Replace with FeathersJS authentication
+        // For now, use a temporary user ID for development
+        const tempUserId = 1; // This should be the actual user ID after login
+        dispatch(changeUser(tempUserId));
+        setLoading(false);
+
+        const unsubscribe = () => {}; // Placeholder cleanup function
 
         // Register service worker
         if ('serviceWorker' in (window?.navigator || {})) {

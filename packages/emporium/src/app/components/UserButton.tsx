@@ -1,6 +1,7 @@
 import { changeUser } from '@emporium/actions';
-import firebase from '@firebase/app';
-import '@firebase/auth';
+// Firebase auth removed - TODO: implement FeathersJS authentication
+// import firebase from '@firebase/app';
+// import '@firebase/auth';
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from 'reactstrap';
@@ -12,24 +13,13 @@ export const UserButton = ({}: UserButtonProps) => {
     const user = useSelector((state: any) => state.user);
 
     const getName = useCallback(() => {
-        const user = firebase.auth().currentUser;
-        let name = 'Rando Calrissian';
-        if (user) {
-            if (user.email) {
-                name = user.email;
-            } else if (user.phoneNumber) {
-                name = user.phoneNumber;
-            }
-        }
-        return name;
-    }, []);
+        // TODO: Get actual user name from FeathersJS API
+        return 'Dev User (ID: ' + user + ')';
+    }, [user]);
 
     const handleClick = useCallback(async () => {
-        firebase
-            .auth()
-            .signOut()
-            .then(() => dispatch(changeUser(null)))
-            .catch(console.error);
+        // TODO: Implement FeathersJS sign out
+        dispatch(changeUser(null));
     }, [dispatch]);
 
     return (
@@ -39,7 +29,7 @@ export const UserButton = ({}: UserButtonProps) => {
             </DropdownToggle>
             <DropdownMenu>
                 <DropdownItem onClick={handleClick}>
-                    Sign Out
+                    Sign Out (disabled)
                 </DropdownItem>
             </DropdownMenu>
         </UncontrolledButtonDropdown>

@@ -3,7 +3,7 @@ import clone from 'clone';
 import { random } from 'lodash-es';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Card, CardBody, CardFooter, CardHeader, Input, InputGroup, InputGroupAddon } from 'reactstrap';
+import { Card, CardBody, CardFooter, CardHeader, Input, InputGroup, InputGroupText } from 'reactstrap';
 
 interface MotivationBlockProps {
     type: string;
@@ -70,9 +70,9 @@ export const MotivationBlock = ({ type }: MotivationBlockProps) => {
         <Card className="m-2 motivationCard">
             <CardHeader>
                 <InputGroup>
-                    <InputGroupAddon className="m-auto" addonType="prepend">
+                    <InputGroupText className="m-auto">
                         {type}:
-                    </InputGroupAddon>
+                    </InputGroupText>
                     <Input
                         type="select"
                         bsSize="sm"

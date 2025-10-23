@@ -10,7 +10,7 @@ import * as images from '@emporium/images';
 import { get, upperCase } from 'lodash-es';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, ButtonGroup, Col, Input, InputGroupAddon, Label, Row } from 'reactstrap';
+import { Button, ButtonGroup, Col, Input, Label, Row } from 'reactstrap';
 import { ModalDeleteConfirm } from './ModalDeleteConfirm';
 
 interface VehicleSelectProps {}
@@ -137,19 +137,17 @@ export const VehicleSelect = ({}: VehicleSelectProps) => {
                     </Input>
                 </Col>
                 <Col sm={2}>
-                    <InputGroupAddon addonType="append">
-                        <ButtonGroup>
-                            <Button onClick={() => dispatch(addDataSet('vehicle'))}>
-                                New
-                            </Button>
-                            <Button
-                                disabled={!vehicle || !writeAccess}
-                                onClick={() => setDeleteModal(true)}
-                            >
-                                Delete
-                            </Button>
-                        </ButtonGroup>
-                    </InputGroupAddon>
+                    <ButtonGroup>
+                        <Button onClick={() => dispatch(addDataSet('vehicle'))}>
+                            New
+                        </Button>
+                        <Button
+                            disabled={!vehicle || !writeAccess}
+                            onClick={() => setDeleteModal(true)}
+                        >
+                            Delete
+                        </Button>
+                    </ButtonGroup>
                 </Col>
             </Row>
             <hr />
