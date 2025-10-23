@@ -5,7 +5,7 @@
   "description": "FeathersJS API for Genesys Emporium",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "sleep 3 && tsx watch src/index.ts",
     "start": "node dist/index.js",
     "build": "tsc",
     "migrate": "knex --knexfile src/knexfile.ts migrate:latest",
@@ -13,17 +13,18 @@
     "migrate:rollback": "knex --knexfile src/knexfile.ts migrate:rollback"
   },
   "dependencies": {
-    "@feathersjs/feathers": "^5.0.29",
-    "@feathersjs/koa": "^5.0.29",
-    "@feathersjs/socketio": "^5.0.29",
     "@feathersjs/authentication": "^5.0.29",
     "@feathersjs/authentication-local": "^5.0.29",
     "@feathersjs/authentication-oauth": "^5.0.29",
     "@feathersjs/errors": "^5.0.29",
+    "@feathersjs/feathers": "^5.0.29",
+    "@feathersjs/knex": "^5.0.29",
+    "@feathersjs/koa": "^5.0.29",
+    "@feathersjs/socketio": "^5.0.29",
     "@koa/bodyparser": "^5.1.1",
+    "dotenv": "^16.4.5",
     "knex": "^3.1.0",
-    "pg": "^8.13.1",
-    "dotenv": "^16.4.5"
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/node": "^22.8.6",

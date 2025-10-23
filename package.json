@@ -2,11 +2,19 @@
     "name": "genesys-emporium",
     "version": "0.0.0",
     "license": "MIT",
+    "packageManager": "yarn@3.5.1",
     "scripts": {
         "nx": "nx",
         "start": "nx serve",
-        "dev": "NODE_OPTIONS=--openssl-legacy-provider nx serve emporium",
-        "build": "NODE_OPTIONS=--openssl-legacy-provider nx build",
+        "dev": "turbo run dev db",
+        "dev:web": "NODE_OPTIONS=--openssl-legacy-provider nx serve emporium",
+        "dev:api": "cd apps/api && yarn dev",
+        "dev:db": "docker compose up",
+        "migrate": "cd apps/api && yarn migrate",
+        "migrate:make": "cd apps/api && yarn migrate:make",
+        "migrate:rollback": "cd apps/api && yarn migrate:rollback",
+        "build": "turbo run build",
+        "build:web": "NODE_OPTIONS=--openssl-legacy-provider nx build emporium",
         "test": "nx test",
         "lint": "nx workspace-lint && nx lint",
         "e2e": "nx e2e",
@@ -88,6 +96,7 @@
         "@typescript-eslint/eslint-plugin": "2.19.2",
         "@typescript-eslint/parser": "2.19.2",
         "babel-jest": "^29.7.0",
+        "concurrently": "^9.1.2",
         "cypress": "^4.1.0",
         "dotenv": "^6.2.0",
         "eslint": "6.8.0",
@@ -102,6 +111,7 @@
         "ts-jest": "^29.1.5",
         "ts-node": "~10.9.2",
         "tslint": "~6.0.0",
+        "turbo": "^2.3.3",
         "typescript": "^5.4.5"
     }
 }

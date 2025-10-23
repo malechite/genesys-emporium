@@ -1,0 +1,10 @@
+{
+  "name": "@genesys-emporium/db",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "db": "cd ../.. && docker compose up",
+    "db:down": "cd ../.. && docker compose down",
+    "db:logs": "cd ../.. && docker compose logs -f"
+  }
+}
