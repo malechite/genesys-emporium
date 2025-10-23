@@ -51,4 +51,7 @@ testem.log
 yarn-debug.log*
 *.iml
 /.yarn
+
+# Turbo
 /.turbo
+/apps/*/.turbo

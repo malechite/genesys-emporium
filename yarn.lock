@@ -2879,6 +2879,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@genesys-emporium/web@workspace:apps/web"
   dependencies:
+    "@feathersjs/authentication-client": ^5.0.35
     "@feathersjs/client": ^5.0.29
     "@feathersjs/feathers": ^5.0.29
     "@feathersjs/socketio-client": ^5.0.29

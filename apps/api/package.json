@@ -10,7 +10,11 @@
     "build": "tsc",
     "migrate": "knex --knexfile src/knexfile.ts migrate:latest",
     "migrate:make": "knex --knexfile src/knexfile.ts migrate:make",
-    "migrate:rollback": "knex --knexfile src/knexfile.ts migrate:rollback"
+    "migrate:rollback": "knex --knexfile src/knexfile.ts migrate:rollback",
+    "migrate:rollback:all": "knex --knexfile src/knexfile.ts migrate:rollback --all",
+    "db:reset": "yarn migrate:rollback:all && yarn migrate",
+    "db:seed": "knex --knexfile src/knexfile.ts seed:run",
+    "db:seed:make": "knex --knexfile src/knexfile.ts seed:make"
   },
   "dependencies": {
     "@feathersjs/authentication": "^5.0.29",
