@@ -1,6 +1,6 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { chars, diceNames, modifiableAttributes } from '@emporium/data-lists';
-import { ControlButtonSet, DeleteButton } from '@emporium/ui';
+import { ControlButtonSet, DeleteButton } from '../';
 import clone from 'clone';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,7 +9,7 @@ import { Fragment } from './Fragments';
 
 interface CustomEquipmentProps {
     type: string;
-    handleClose: () => void;
+    handleClose?: () => void;
 }
 
 const initialState = {
@@ -157,7 +157,7 @@ export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => 
     }, [state, type, dispatch, initState]);
 
     const handleDuplicate = useCallback((event: any) => {
-        const equipmentType = event.target.getAttribute('type');
+        const equipmentType = event.target.getAttribute('data-type');
         const equipment = { customWeapons, customGear, customArmor }[equipmentType];
         const { id, ...data } = { ...equipment[event.target.name] };
         dispatch(addDataSet(equipmentType, { ...data, name: `${data.name} (copy)` }));
@@ -165,7 +165,7 @@ export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => 
     }, [customWeapons, customGear, customArmor, dispatch]);
 
     const handleDelete = useCallback((event: any) => {
-        const equipmentType = event.target.getAttribute('type');
+        const equipmentType = event.target.getAttribute('data-type');
         const equipment = { customWeapons, customGear, customArmor }[equipmentType];
         dispatch(removeDataSet(equipmentType, equipment[event.target.name].id));
         event.preventDefault();
@@ -173,7 +173,7 @@ export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => 
 
     const handleEdit = useCallback((event: any) => {
         event.preventDefault();
-        const equipmentType = event.target.getAttribute('type');
+        const equipmentType = event.target.getAttribute('data-type');
         const equipmentMap = { customWeapons, customGear, customArmor };
         const equipment = equipmentMap[equipmentType][event.target.name];
 
@@ -581,14 +581,14 @@ export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => 
                                         <ButtonGroup>
                                             <Button
                                                 name={key}
-                                                type={type}
+                                                data-type={type}
                                                 onClick={handleEdit}
                                             >
                                                 Edit
                                             </Button>
                                             <Button
                                                 name={key}
-                                                type={type}
+                                                data-type={type}
                                                 onClick={
                                                     handleDuplicate
                                                 }
@@ -597,7 +597,7 @@ export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => 
                                             </Button>
                                             <DeleteButton
                                                 name={key}
-                                                type={type}
+                                                data-type={type}
                                                 onClick={handleDelete}
                                             />
                                         </ButtonGroup>

@@ -1,12 +1,12 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
-import { ControlButtonSet, DeleteButton } from '@emporium/ui';
+import { ControlButtonSet, DeleteButton } from '../';
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
 import { Fragment } from './Fragments';
 
 interface CustomMotivationsProps {
-    handleClose: () => void;
+    handleClose?: () => void;
 }
 
 const initialState = {

@@ -14,7 +14,7 @@ export const Equipment = ({}: EquipmentProps) => {
     const equipmentStatsSelector = useSelector((state: any) => equipmentStats(state));
     const encumbranceLimitSelector = useSelector((state: any) => encumbranceLimit(state));
     const equipmentWeapons = useSelector((state: any) => state.equipmentWeapons);
-    const gearDiceSelector = useSelector((state: any) => gearDice(state));
+    const gearDiceSelector = useSelector((state: any) => gearDice(state)) as any;
     const qualities = useSelector((state: any) => state.qualities);
     const skills = useSelector((state: any) => state.skills);
     const totalEncumbranceSelector = useSelector((state: any) => totalEncumbrance(state));

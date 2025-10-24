@@ -2907,6 +2907,7 @@ __metadata:
     "@feathersjs/feathers": ^5.0.29
     "@feathersjs/socketio-client": ^5.0.29
     "@tailwindcss/postcss": ^4
+    "@types/minimatch": ^6.0.0
     "@types/node": ^20
     "@types/react": ^19
     "@types/react-dom": ^19
@@ -5633,7 +5634,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/minimatch@npm:*":
+"@types/minimatch@npm:*, @types/minimatch@npm:^6.0.0":
   version: 6.0.0
   resolution: "@types/minimatch@npm:6.0.0"
   dependencies:

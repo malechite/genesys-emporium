@@ -1,6 +1,6 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { chars } from '@emporium/data-lists';
-import { ControlButtonSet, DeleteButton } from '@emporium/ui';
+import { ControlButtonSet, DeleteButton } from '../';
 import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
@@ -13,6 +13,7 @@ interface CustomSkillsProps {
 export const CustomSkills = ({ handleClose }: CustomSkillsProps) => {
     const dispatch = useDispatch() as any;
     const customSkills = useSelector((state: any) => state.customSkills);
+    const [id, setId] = useState<any>(null);
     const [name, setName] = useState('');
     const [type, setType] = useState('');
     const [characteristic, setCharacteristic] = useState('');
@@ -22,6 +23,7 @@ export const CustomSkills = ({ handleClose }: CustomSkillsProps) => {
     const _type = 'customSkills';
 
     const initState = useCallback(() => {
+        setId(null);
         setName('');
         setType('');
         setCharacteristic('');
@@ -48,11 +50,11 @@ export const CustomSkills = ({ handleClose }: CustomSkillsProps) => {
         if (mode === 'add') {
             dispatch(addDataSet(_type, data));
         } else if (mode === 'edit') {
-            dispatch(modifyDataSet(_type, data));
+            dispatch(modifyDataSet(_type, { ...data, id }));
         }
         initState();
         event.preventDefault();
-    }, [name, type, characteristic, setting, mode, dispatch, initState]);
+    }, [name, type, characteristic, setting, id, mode, dispatch, initState]);
 
     const handleDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         dispatch(removeDataSet(
@@ -64,6 +66,7 @@ export const CustomSkills = ({ handleClose }: CustomSkillsProps) => {
 
     const handleEdit = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         const skill = customSkills[event.currentTarget.name];
+        setId(skill.id);
         setName(skill.name);
         setType(skill.type);
         setCharacteristic(skill.characteristic);

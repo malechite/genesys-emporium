@@ -1,6 +1,6 @@
 import { changeData } from '@emporium/actions';
 import { criticalText } from '@emporium/selectors';
-import { DeleteButton } from '@emporium/ui';
+import { DeleteButton } from '../';
 import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Input, Row, Table } from 'reactstrap';

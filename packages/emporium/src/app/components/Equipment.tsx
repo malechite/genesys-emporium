@@ -8,7 +8,7 @@ import {
     totalEncumbrance,
     totalSoak
 } from '@emporium/selectors';
-import { DeleteButton } from '@emporium/ui';
+import { DeleteButton } from './';
 import clone from 'clone';
 import { omit, range } from 'lodash-es';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -32,7 +32,7 @@ export const Equipment = ({}: EquipmentProps) => {
     const equipmentStatsValue = useSelector(equipmentStats);
     const equipmentWeapons = useSelector((state: any) => state.equipmentWeapons);
     const gear = useSelector((state: any) => state.gear);
-    const gearDiceValue = useSelector(gearDice);
+    const gearDiceValue = useSelector(gearDice) as any;
     const moneyValue = useSelector((state: any) => state.money);
     const aemberValue = useSelector((state: any) => state.aember);
     const qualities = useSelector((state: any) => state.qualities);
@@ -443,8 +443,8 @@ export const Equipment = ({}: EquipmentProps) => {
                 </Tabs>
             </Row>
             <Gear
-                modal={equipModal}
-                type={equipModal}
+                modal={!!equipModal}
+                type={typeof equipModal === 'string' ? equipModal : ''}
                 handleClose={() => setEquipModal(false)}
             />
         </div>

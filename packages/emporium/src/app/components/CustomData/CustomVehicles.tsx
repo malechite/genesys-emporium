@@ -1,5 +1,5 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
-import { ControlButtonSet, DeleteButton } from '@emporium/ui';
+import { ControlButtonSet, DeleteButton } from '../';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
@@ -14,6 +14,7 @@ export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
     const customVehicles = useSelector((state: any) => state.customVehicles);
     const skills = useSelector((state: any) => state.skills);
 
+    const [id, setId] = useState<any>(null);
     const [name, setName] = useState('');
     const [silhouette, setSilhouette] = useState(0);
     const [maxSpeed, setMaxSpeed] = useState(0);
@@ -36,6 +37,7 @@ export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
     const _type = 'customVehicles';
 
     const initState = useCallback(() => {
+        setId(null);
         setName('');
         setSilhouette(0);
         setMaxSpeed(0);
@@ -93,11 +95,11 @@ export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
         if (mode === 'add') {
             dispatch(addDataSet(_type, data));
         } else if (mode === 'edit') {
-            dispatch(modifyDataSet(_type, data));
+            dispatch(modifyDataSet(_type, { ...data, id }));
         }
         initState();
         event.preventDefault();
-    }, [name, silhouette, maxSpeed, handling, defense, armor, hullTraumaThreshold, systemStrainThreshold, skill, complement, passengerCapacity, price, rarity, consumables, encumbranceCapacity, weapons, setting, mode, dispatch, initState]);
+    }, [name, silhouette, maxSpeed, handling, defense, armor, hullTraumaThreshold, systemStrainThreshold, skill, complement, passengerCapacity, price, rarity, consumables, encumbranceCapacity, weapons, setting, id, mode, dispatch, initState]);
 
     const handleDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         dispatch(removeDataSet(
@@ -109,6 +111,7 @@ export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
 
     const handleEdit = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         const vehicle = customVehicles[event.currentTarget.name];
+        setId(vehicle.id);
         setMode('edit');
         setName(vehicle.name);
         setSilhouette(vehicle.silhouette);
@@ -229,7 +232,7 @@ export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
                         value={stateMap[field]}
                         array={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
                         handleChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                            setRarity(event.target.value)
+                            setRarity(Number(event.target.value))
                         }
                     />
                 );

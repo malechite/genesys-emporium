@@ -296,7 +296,7 @@ export const VehicleSelect = ({}: VehicleSelectProps) => {
             </Row>
             <ModalDeleteConfirm
                 deleteModal={deleteModal}
-                confirmedDelete={confirmedDelete}
+                confirmedDelete={() => confirmedDelete({} as any)}
                 handleClose={() => setDeleteModal(false)}
                 type="Vehicle"
             />

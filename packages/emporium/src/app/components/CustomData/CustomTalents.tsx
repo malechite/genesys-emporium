@@ -1,6 +1,6 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { chars, diceNames, modifiableAttributes } from '@emporium/data-lists';
-import { ControlButtonSet, DeleteButton } from '@emporium/ui';
+import { ControlButtonSet, DeleteButton } from '../';
 import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, ButtonGroup, Table } from 'reactstrap';
@@ -16,6 +16,7 @@ export const CustomTalents = ({ handleClose }: CustomTalentsProps) => {
     const talents = useSelector((state: any) => state.talents);
     const skills = useSelector((state: any) => state.skills);
 
+    const [id, setId] = useState<any>(null);
     const [name, setName] = useState('');
     const [tier, setTier] = useState<number | string>('');
     const [activation, setActivation] = useState<boolean | string>('');
@@ -32,6 +33,7 @@ export const CustomTalents = ({ handleClose }: CustomTalentsProps) => {
     const _type = 'customTalents';
 
     const initState = useCallback(() => {
+        setId(null);
         setName('');
         setTier('');
         setActivation('');
@@ -72,10 +74,10 @@ export const CustomTalents = ({ handleClose }: CustomTalentsProps) => {
         if (mode === 'add') {
             dispatch(addDataSet(_type, data));
         } else if (mode === 'edit') {
-            dispatch(modifyDataSet(_type, data));
+            dispatch(modifyDataSet(_type, { ...data, id }));
         }
         initState();
-    }, [name, tier, activation, turn, ranked, description, setting, modifier, modifierValue, prerequisite, antirequisite, mode, dispatch, initState]);
+    }, [name, tier, activation, turn, ranked, description, setting, modifier, modifierValue, prerequisite, antirequisite, id, mode, dispatch, initState]);
 
     const handleDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         dispatch(removeDataSet(
@@ -92,6 +94,7 @@ export const CustomTalents = ({ handleClose }: CustomTalentsProps) => {
 
     const handleEdit = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         const talent = customTalents[event.currentTarget.name];
+        setId(talent.id);
         setName(talent.name);
         setTier(talent.tier);
         setActivation(talent.activation ? talent.activation : false);

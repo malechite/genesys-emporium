@@ -1,4 +1,4 @@
-import { DeleteButton } from '@emporium/ui';
+import { DeleteButton } from '../';
 import React, { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { Button, Col, Row, Table } from 'reactstrap';

@@ -301,7 +301,7 @@ export const importCustomData = customDataSetImport => {
                         const { characteristics, ...obj } = item as any;
                         const final = {
                             user_id: userId,
-                            name: item.name || 'none',
+                            name: (item as any).name || 'none',
                             data: { ...obj, ...characteristics },
                             read_access: [userId],
                             write_access: [userId]
@@ -341,7 +341,7 @@ export const addDataSet = (type, data = {}) => {
         try {
             const final = {
                 user_id: userId,
-                name: data.name || 'none',
+                name: (data as any).name || 'none',
                 data: data,
                 read_access: [userId],
                 write_access: [userId]

@@ -137,7 +137,7 @@ export const ImportExport = ({}: ImportExportProps) => {
                                                                             .data
                                                                     );
                                                                 }
-                                                                resolve2();
+                                                                resolve2(undefined);
                                                             });
                                                     }
                                                 );
@@ -148,7 +148,7 @@ export const ImportExport = ({}: ImportExportProps) => {
                             );
                             Promise.all(characters).then(characters => {
                                 final.characters = characters;
-                                resolve0();
+                                resolve0(undefined);
                             });
                             break;
                         default:
@@ -159,7 +159,7 @@ export const ImportExport = ({}: ImportExportProps) => {
                                 ];
                                 return item;
                             });
-                            resolve0();
+                            resolve0(undefined);
                             break;
                     }
                 });

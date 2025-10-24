@@ -21,14 +21,17 @@
 
 // Stub export for backwards compatibility during migration
 export const db = {
-    doc: () => ({
+    doc: (path) => ({
         set: () => Promise.resolve(),
-        get: () => Promise.resolve({ exists: false }),
+        get: () => Promise.resolve({
+            exists: false,
+            data: () => ({})
+        }),
         onSnapshot: () => () => {},
         update: () => Promise.resolve(),
         delete: () => Promise.resolve()
     }),
-    collection: () => ({
+    collection: (path) => ({
         add: () => Promise.resolve(),
         where: () => ({
             get: () => Promise.resolve({ docs: [] }),

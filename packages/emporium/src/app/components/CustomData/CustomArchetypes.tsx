@@ -12,7 +12,7 @@ import ControlButtonSet from '../ControlButtonSet';
 const attributes = { Wounds: 'woundThreshold', Strain: 'strainThreshold' };
 
 interface CustomArchetypesProps {
-    handleClose: () => void;
+    handleClose?: () => void;
 }
 
 const initialState = {
