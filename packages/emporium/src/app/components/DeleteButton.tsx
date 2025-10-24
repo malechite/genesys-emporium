@@ -1,8 +1,10 @@
 import React from 'react';
 import { Button } from 'reactstrap';
-import './delete-button.scss';
 
-export class DeleteButton extends React.Component<any, { confirmation: boolean }> {
+export class DeleteButton extends React.Component<
+    any,
+    { confirmation: boolean }
+> {
     public state = { confirmation: false };
     private timer: any = null;
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button, ButtonGroup, Row } from 'reactstrap';
-import './control-button-set.scss';
 
 export const ControlButtonSet = ({
     mode,

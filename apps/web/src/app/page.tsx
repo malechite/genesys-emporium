@@ -21,8 +21,8 @@ export default function Home() {
             accessToken: token
           });
 
-          // If successful, redirect to dashboard
-          router.push('/dashboard');
+          // If successful, redirect to emporium page
+          router.push('/emporium');
           return;
         }
       } catch (error) {

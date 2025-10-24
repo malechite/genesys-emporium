@@ -13,7 +13,7 @@ import {
     Row,
     Table
 } from 'reactstrap';
-import './gear.scss';
+import styled from 'styled-components';
 
 interface GearProps {
     type: string;
@@ -254,8 +254,8 @@ export const Gear = ({ type, modal, handleClose }: GearProps) => {
     }, [type, weapons, armor, gear]);
 
     return (
-        <Modal
-            className={`body-${theme} gear-modal`}
+        <StyledGearModal
+            className={`body-${theme}`}
             isOpen={!!modal}
             toggle={handleCloseModal}
         >
@@ -264,13 +264,12 @@ export const Gear = ({ type, modal, handleClose }: GearProps) => {
             </ModalHeader>
             <ModalBody className="m-1">
                 <div>
-                    <input
-                        className="item-filter"
+                    <ItemFilter
                         type="text"
                         placeholder="Name Filter"
                         onChange={handleFilterChange}
                     />
-                    <Typeahead
+                    <StyledTypeahead
                         id={`settingChooser`}
                         multiple={true}
                         options={books}
@@ -285,7 +284,7 @@ export const Gear = ({ type, modal, handleClose }: GearProps) => {
                         }
                     />
                 </div>
-                <Row className="table-container">
+                <TableContainer>
                     <Table>
                         <thead>{generateEquipmentTableHeader()}</thead>
                         <tbody>
@@ -307,11 +306,10 @@ export const Gear = ({ type, modal, handleClose }: GearProps) => {
                                     )}
                         </tbody>
                     </Table>
-                </Row>
+                </TableContainer>
             </ModalBody>
             <ModalFooter>
-                <span
-                    className="settings-restriction"
+                <SettingsRestriction
                     title="By enabling this, you restrict options to only those found in your selected settings"
                 >
                     <label htmlFor="settingsRestriction">
@@ -323,9 +321,74 @@ export const Gear = ({ type, modal, handleClose }: GearProps) => {
                         checked={restrictToSetting}
                         onChange={handleSettingRestrictionChange}
                     />
-                </span>
+                </SettingsRestriction>
                 <Button onClick={handleCloseModal}>Close</Button>
             </ModalFooter>
-        </Modal>
+        </StyledGearModal>
     );
 };
+
+// Styled Components
+const StyledGearModal = styled(Modal)`
+    max-width: 600px;
+
+    table td {
+        &:first-child {
+            text-align: center;
+
+            button {
+                width: 27px;
+                height: 27px;
+                text-align: center;
+                padding: 0;
+            }
+        }
+
+        &:last-child {
+            text-align: center;
+        }
+    }
+`;
+
+const ItemFilter = styled.input`
+    width: 30%;
+    display: inline-block;
+    border-radius: 4px;
+    padding: 7px 0 5px 11px;
+    border: 1px solid rgb(206, 212, 218);
+    margin: -15px 5px 5px;
+    vertical-align: top;
+`;
+
+const TableContainer = styled(Row)`
+    clear: right;
+`;
+
+const StyledTypeahead = styled(Typeahead)`
+    position: relative;
+    width: calc(70% - 10px);
+    display: inline-block;
+    margin-top: -15px;
+    margin-bottom: 5px;
+
+    .rbt-aux .rbt-close {
+        margin-top: 3px;
+    }
+`;
+
+const SettingsRestriction = styled.span`
+    margin-top: 4px;
+    position: absolute;
+    left: 16px;
+
+    input {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+    }
+
+    label {
+        margin-right: 5px;
+        font-size: 1.2em;
+    }
+`;

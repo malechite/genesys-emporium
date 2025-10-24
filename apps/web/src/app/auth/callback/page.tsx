@@ -34,10 +34,9 @@ export default function AuthCallback() {
     // Store the token in localStorage
     localStorage.setItem('feathers-jwt', decodedToken);
 
-    // Redirect to the main app (dashboard or character list)
-    // For now, we'll redirect to a dashboard page we'll create next
+    // Redirect to the emporium page
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/emporium');
     }, 1000);
   }, [searchParams, router]);
 

@@ -1,5 +1,29 @@
 {
-  "name": "@genesys-emporium/legacy",
-  "version": "1.0.0",
-  "private": true
+    "name": "@genesys-emporium/emporium",
+    "version": "1.0.0",
+    "private": true,
+    "main": "src/main.tsx",
+    "exports": {
+        ".": "./src/main.tsx",
+        "./app": "./src/app/app.tsx",
+        "./app/*": "./src/app/*",
+        "./redux": "./src/redux",
+        "./redux/*": "./src/redux/*",
+        "./actions": "./src/redux/actions.tsx",
+        "./selectors": "./src/redux/selectors",
+        "./selectors/*": "./src/redux/selectors/*",
+        "./components": "./src/app/components",
+        "./components/*": "./src/app/components/*",
+        "./ui": "./src/app/components",
+        "./ui/*": "./src/app/components/*",
+        "./data": "./src/assets/data",
+        "./data/*": "./src/assets/data/*",
+        "./data-lists": "./src/assets/data/lists.js",
+        "./images": "./src/assets/images",
+        "./images/*": "./src/assets/images/*",
+        "./styles": "./src/styles",
+        "./styles/*": "./src/styles/*",
+        "./api": "./src/api",
+        "./api/*": "./src/api/*"
+    }
 }

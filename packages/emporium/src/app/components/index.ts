@@ -36,3 +36,5 @@ export { XPBoxes } from './XPBoxes';
 export { XPPopup } from './XPPopup';
 export { VehicleSelect } from './VehicleSelect';
 export { ModalDeleteConfirm } from './ModalDeleteConfirm';
+export { ControlButtonSet } from './ControlButtonSet';
+export { DeleteButton } from './DeleteButton';

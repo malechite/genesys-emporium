@@ -1,12 +1,13 @@
 import { addDataSet, modifyDataSet, removeDataSet } from '@emporium/actions';
 import { chars } from '@emporium/data-lists';
 import * as images from '@emporium/images';
-import { ControlButtonSet, DeleteButton } from '@emporium/ui';
 import { upperFirst } from 'lodash-es';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonGroup, Col, Row, Table } from 'reactstrap';
 import { Fragment } from './Fragments';
+import DeleteButton from '../DeleteButton';
+import ControlButtonSet from '../ControlButtonSet';
 
 const attributes = { Wounds: 'woundThreshold', Strain: 'strainThreshold' };
 
@@ -34,8 +35,12 @@ const initialState = {
 
 export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
     const dispatch = useDispatch();
-    const customArchetypes = useSelector((state: any) => state.customArchetypes);
-    const archetypeTalents = useSelector((state: any) => state.archetypeTalents);
+    const customArchetypes = useSelector(
+        (state: any) => state.customArchetypes
+    );
+    const archetypeTalents = useSelector(
+        (state: any) => state.archetypeTalents
+    );
     const skills = useSelector((state: any) => state.skills);
     const theme = useSelector((state: any) => state.theme);
 
@@ -55,20 +60,23 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
         setState(initialState);
     }, []);
 
-    const handleClick = useCallback((event: any) => {
-        const value = +state[event.target.name] + +event.target.value;
-        if (chars.includes(event.target.name) && value > 5) {
-            alert(`Cannot set ${event.target.name} to ${value}`);
-            return;
-        }
+    const handleClick = useCallback(
+        (event: any) => {
+            const value = +state[event.target.name] + +event.target.value;
+            if (chars.includes(event.target.name) && value > 5) {
+                alert(`Cannot set ${event.target.name} to ${value}`);
+                return;
+            }
 
-        if (0 >= value) {
-            alert(`Cannot set ${event.target.name} to ${value}`);
-            return;
-        }
+            if (0 >= value) {
+                alert(`Cannot set ${event.target.name} to ${value}`);
+                return;
+            }
 
-        setState((prev: any) => ({ ...prev, [event.target.name]: value }));
-    }, [state]);
+            setState((prev: any) => ({ ...prev, [event.target.name]: value }));
+        },
+        [state]
+    );
 
     const handleSkillSelect = useCallback((event: any) => {
         const skill = event.target.value;
@@ -80,14 +88,19 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
         event.preventDefault();
     }, []);
 
-    const handleDuplicate = useCallback((event: any) => {
-        const { id, ...data } = { ...customArchetypes[event.target.name] };
-        dispatch(addDataSet('customArchetypes', {
-            ...data,
-            name: `${data.name} (copy)`
-        }));
-        event.preventDefault();
-    }, [customArchetypes, dispatch]);
+    const handleDuplicate = useCallback(
+        (event: any) => {
+            const { id, ...data } = { ...customArchetypes[event.target.name] };
+            dispatch(
+                addDataSet('customArchetypes', {
+                    ...data,
+                    name: `${data.name} (copy)`
+                })
+            );
+            event.preventDefault();
+        },
+        [customArchetypes, dispatch]
+    );
 
     const handleSubmit = useCallback(() => {
         const { freeSkillRanks, archetypeTalents, mode, ...rest } = state;
@@ -106,27 +119,35 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
         initState();
     }, [state, dispatch, initState]);
 
-    const handleEdit = useCallback((event: any) => {
-        const archetype = customArchetypes[event.target.name];
-        setState({
-            freeSkillRanks: archetype.skills ? archetype.skills : {},
-            archetypeTalents: archetype.talents ? archetype.talents : [],
-            setting:
-                typeof archetype.setting === 'string'
-                    ? archetype.setting.split(', ')
-                    : archetype.setting,
-            ...archetype,
-            mode: 'edit'
-        });
-    }, [customArchetypes]);
+    const handleEdit = useCallback(
+        (event: any) => {
+            const archetype = customArchetypes[event.target.name];
+            setState({
+                freeSkillRanks: archetype.skills ? archetype.skills : {},
+                archetypeTalents: archetype.talents ? archetype.talents : [],
+                setting:
+                    typeof archetype.setting === 'string'
+                        ? archetype.setting.split(', ')
+                        : archetype.setting,
+                ...archetype,
+                mode: 'edit'
+            });
+        },
+        [customArchetypes]
+    );
 
-    const handleDelete = useCallback((event: any) => {
-        dispatch(removeDataSet(
-            'customArchetypes',
-            customArchetypes[event.target.name].id
-        ));
-        event.preventDefault();
-    }, [customArchetypes, dispatch]);
+    const handleDelete = useCallback(
+        (event: any) => {
+            dispatch(
+                removeDataSet(
+                    'customArchetypes',
+                    customArchetypes[event.target.name].id
+                )
+            );
+            event.preventDefault();
+        },
+        [customArchetypes, dispatch]
+    );
 
     const handleCloseWrapper = useCallback(() => {
         initState();
@@ -141,7 +162,10 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
                 value={name}
                 mode={mode}
                 handleChange={event =>
-                    setState((prev: any) => ({ ...prev, name: event.target.value }))
+                    setState((prev: any) => ({
+                        ...prev,
+                        name: event.target.value
+                    }))
                 }
             />
 
@@ -150,14 +174,19 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
                 title="experience"
                 value={experience}
                 handleChange={event =>
-                    setState((prev: any) => ({ ...prev, experience: event.target.value }))
+                    setState((prev: any) => ({
+                        ...prev,
+                        experience: event.target.value
+                    }))
                 }
             />
 
             <Fragment
                 type="setting"
                 setting={setting}
-                setState={selected => setState((prev: any) => ({ ...prev, setting: selected }))}
+                setState={selected =>
+                    setState((prev: any) => ({ ...prev, setting: selected }))
+                }
             />
 
             <Row className="mt-2">
@@ -275,7 +304,9 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
                 array={Object.keys(freeSkillRanks)}
                 object={freeSkillRanks}
                 nameObj={skills}
-                handleClear={() => setState((prev: any) => ({ ...prev, freeSkillRanks: {} }))}
+                handleClear={() =>
+                    setState((prev: any) => ({ ...prev, freeSkillRanks: {} }))
+                }
             />
 
             <Fragment
@@ -300,14 +331,19 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
                 type="list"
                 array={selectedArchetypeTalents.sort()}
                 nameObj={archetypeTalents}
-                handleClear={() => setState((prev: any) => ({ ...prev, archetypeTalents: [] }))}
+                handleClear={() =>
+                    setState((prev: any) => ({ ...prev, archetypeTalents: [] }))
+                }
             />
 
             <Fragment
                 type="description"
                 value={description}
                 handleChange={event =>
-                    setState((prev: any) => ({ ...prev, description: event.target.value }))
+                    setState((prev: any) => ({
+                        ...prev,
+                        description: event.target.value
+                    }))
                 }
             />
 
@@ -350,9 +386,7 @@ export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
                                             </Button>
                                             <Button
                                                 name={key}
-                                                onClick={
-                                                    handleDuplicate
-                                                }
+                                                onClick={handleDuplicate}
                                             >
                                                 Duplicate
                                             </Button>

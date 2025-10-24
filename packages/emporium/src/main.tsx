@@ -13,7 +13,8 @@ import 'sw-rpg-icons/css/sw-rpg-colors.min.css';
 import 'sw-rpg-icons/css/sw-rpg-icons.min.css';
 import { App } from './app/app';
 import allReducers from './redux/reducers';
-import './styles/index.scss';
+// TODO: Convert to styled-components GlobalStyle
+// import './styles/index.scss';
 
 export const store = createStore(allReducers, {}, applyMiddleware(thunk));
 

@@ -19,7 +19,30 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@genesys-emporium/emporium": ["../../packages/emporium/src/main.tsx"],
+      "@genesys-emporium/emporium/*": ["../../packages/emporium/src/*"],
+      "@emporium/app": ["../../packages/emporium/src/app"],
+      "@emporium/app/*": ["../../packages/emporium/src/app/*"],
+      "@emporium/redux": ["../../packages/emporium/src/redux"],
+      "@emporium/redux/*": ["../../packages/emporium/src/redux/*"],
+      "@emporium/actions": ["../../packages/emporium/src/redux/actions.tsx"],
+      "@emporium/selectors": ["../../packages/emporium/src/redux/selectors"],
+      "@emporium/selectors/*": ["../../packages/emporium/src/redux/selectors/*"],
+      "@emporium/components": ["../../packages/emporium/src/app/components"],
+      "@emporium/components/*": ["../../packages/emporium/src/app/components/*"],
+      "@emporium/ui": ["../../packages/emporium/src/app/components"],
+      "@emporium/ui/*": ["../../packages/emporium/src/app/components/*"],
+      "@emporium/data": ["../../packages/emporium/src/assets/data"],
+      "@emporium/data/*": ["../../packages/emporium/src/assets/data/*"],
+      "@emporium/data-lists": ["../../packages/emporium/src/assets/data/lists.js"],
+      "@emporium/images": ["../../packages/emporium/src/assets/images"],
+      "@emporium/images/*": ["../../packages/emporium/src/assets/images/*"],
+      "@emporium/styles": ["../../packages/emporium/src/styles"],
+      "@emporium/styles/*": ["../../packages/emporium/src/styles/*"],
+      "@emporium/api": ["../../packages/emporium/src/api"],
+      "@emporium/api/*": ["../../packages/emporium/src/api/*"],
+      "@emporium/*": ["../../packages/emporium/src/*"]
     }
   },
   "include": [

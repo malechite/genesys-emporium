@@ -7,7 +7,7 @@ import ReactGA from 'react-ga';
 import { useDispatch, useSelector } from 'react-redux';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { Container } from 'reactstrap';
-import './app.scss';
+import { GlobalStyles } from '../styles';
 import { DataPage, DiscordLogin, Loading, MainPage, User, VehicleSelect } from './components';
 import { CustomData } from './components/CustomData';
 
@@ -107,8 +107,10 @@ export const App = () => {
     }
 
     return (
-        <Container className={`body-${theme}`}>
-            <Tabs
+        <>
+            <GlobalStyles />
+            <Container className={`body-${theme}`}>
+                <Tabs
                 defaultIndex={0}
                 className="d-print-none mt-2 mx-1"
                 style={{ marginBottom: '5rem' }}
@@ -132,10 +134,11 @@ export const App = () => {
                     <DataPage />
                 </TabPanel>
             </Tabs>
-            <div className="d-none d-print-block">
-                {printContent}
-            </div>
-            <div className={`bg bg-${theme} d-print-none`} />
-        </Container>
+                <div className="d-none d-print-block">
+                    {printContent}
+                </div>
+                <div className={`bg bg-${theme} d-print-none`} />
+            </Container>
+        </>
     );
 };

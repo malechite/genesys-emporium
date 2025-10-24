@@ -5,7 +5,7 @@ import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Button, Input, Row, Table } from 'reactstrap';
 import { Description } from '../Description';
-import './critical.scss';
+import styled from 'styled-components';
 
 interface CriticalProps {}
 
@@ -55,7 +55,7 @@ export const Critical = ({}: CriticalProps) => {
     }, [handleSubmit]);
 
     return (
-        <div className="critical-container">
+        <CriticalContainer>
             <Row className="justify-content-end">
                 <div className={`header header-${theme}`}>
                     CRITICAL INJURES
@@ -106,6 +106,13 @@ export const Critical = ({}: CriticalProps) => {
                     Add
                 </Button>
             </Row>
-        </div>
+        </CriticalContainer>
     );
 };
+
+// Styled Components
+const CriticalContainer = styled.div`
+    table td:last-child {
+        text-align: right;
+    }
+`;
