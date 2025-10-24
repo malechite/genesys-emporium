@@ -47,13 +47,22 @@ export const CharacterImage = ({}: CharacterImageProps) => {
             </Row>
             <hr />
             <Row className="justify-content-center">
-                <img
-                    className="characterImage m-1 w-100 h-100"
-                    src={description.image ? description.image : ''}
-                    alt="not found"
-                    ref={imgRef}
-                    onError={handleImageError}
-                />
+                {description.image ? (
+                    <img
+                        className="characterImage m-1 w-100 h-100"
+                        src={description.image}
+                        alt="Character"
+                        ref={imgRef}
+                        onError={handleImageError}
+                    />
+                ) : (
+                    <img
+                        className="characterImage m-1 w-100 h-100"
+                        src={images.user}
+                        alt="Default character"
+                        ref={imgRef}
+                    />
+                )}
             </Row>
             <Modal
                 className={`body-${theme}`}

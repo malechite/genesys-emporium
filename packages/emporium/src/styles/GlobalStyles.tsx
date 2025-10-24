@@ -1,198 +1,19 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyles = createGlobalStyle`
-  /* Font Faces */
-  @font-face {
-    font-family: 'Bebas Neue';
-    src: url('/assets/fonts/BebasNeueBold.woff2') format('woff2'),
-         url('/assets/fonts/BebasNeueBold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Bebas Neue';
-    src: url('/assets/fonts/BebasNeueRegular.woff2') format('woff2'),
-         url('/assets/fonts/BebasNeueRegular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Avenir Next LT Pro';
-    src: url('/assets/fonts/AvenirNextLTPro-Regular.woff2') format('woff2'),
-         url('/assets/fonts/AvenirNextLTPro-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Avenir Next LT Pro';
-    src: url('/assets/fonts/AvenirNextLTPro-Bold.woff2') format('woff2'),
-         url('/assets/fonts/AvenirNextLTPro-Bold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Minion Pro';
-    src: url('/assets/fonts/MinionPro-Regular.woff2') format('woff2'),
-         url('/assets/fonts/MinionPro-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Minion Pro';
-    src: url('/assets/fonts/MinionPro-Bold.woff2') format('woff2'),
-         url('/assets/fonts/MinionPro-Bold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'American Captian';
-    src: url('/assets/fonts/american-captain-webfont.woff2') format('woff2'),
-         url('/assets/fonts/american-captain-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Archistico';
-    src: url('/assets/fonts/archistico_simple.woff2') format('woff2'),
-         url('/assets/fonts/archistico_simple.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Archistico';
-    src: url('/assets/fonts/archistico_bold.woff2') format('woff2'),
-         url('/assets/fonts/archistico_bold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Charis SIL';
-    src: url('/assets/fonts/CharisSIL.woff2') format('woff2'),
-         url('/assets/fonts/CharisSIL.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Charis SIL';
-    src: url('/assets/fonts/CharisSIL-Bold.woff2') format('woff2'),
-         url('/assets/fonts/CharisSIL-Bold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Bolton';
-    src: url('/assets/fonts/Bolton.woff2') format('woff2'),
-         url('/assets/fonts/Bolton.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Bolton';
-    src: url('/assets/fonts/BoltonBold.woff2') format('woff2'),
-         url('/assets/fonts/BoltonBold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Bolton';
-    src: url('/assets/fonts/BoltonItalic.woff2') format('woff2'),
-         url('/assets/fonts/BoltonItalic.woff') format('woff');
-    font-weight: normal;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'Bolton';
-    src: url('/assets/fonts/BoltonBoldItalic.woff2') format('woff2'),
-         url('/assets/fonts/BoltonBoldItalic.woff') format('woff');
-    font-weight: bold;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'Adobe Garamond Pro';
-    src: url('/assets/fonts/AGaramondPro-Bold.woff2') format('woff2'),
-         url('/assets/fonts/AGaramondPro-Bold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Adobe Garamond Pro';
-    src: url('/assets/fonts/AGaramondPro-Regular.woff2') format('woff2'),
-         url('/assets/fonts/AGaramondPro-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Adobe Garamond Pro';
-    src: url('/assets/fonts/AGaramondPro-Italic.woff2') format('woff2'),
-         url('/assets/fonts/AGaramondPro-Italic.woff') format('woff');
-    font-weight: normal;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'Adobe Garamond Pro';
-    src: url('/assets/fonts/AGaramondPro-BoldItalic.woff2') format('woff2'),
-         url('/assets/fonts/AGaramondPro-BoldItalic.woff') format('woff');
-    font-weight: bold;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'Khand';
-    src: url('/assets/fonts/khand-bold-webfont.woff2') format('woff2'),
-         url('/assets/fonts/khand-bold-webfont.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Khand';
-    src: url('/assets/fonts/khand-light-webfont.woff2') format('woff2'),
-         url('/assets/fonts/khand-light-webfont.woff') format('woff');
-    font-weight: 300;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Khand';
-    src: url('/assets/fonts/khand-medium-webfont.woff2') format('woff2'),
-         url('/assets/fonts/khand-medium-webfont.woff') format('woff');
-    font-weight: 500;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Khand';
-    src: url('/assets/fonts/khand-regular-webfont.woff2') format('woff2'),
-         url('/assets/fonts/khand-regular-webfont.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'Khand';
-    src: url('/assets/fonts/khand-semibold-webfont.woff2') format('woff2'),
-         url('/assets/fonts/khand-semibold-webfont.woff') format('woff');
-    font-weight: 600;
-    font-style: normal;
-  }
+  /* Google Fonts - Using CSS Variables from Next.js */
+  /*
+   * Font Mappings:
+   * - 'Bebas Neue' → var(--font-bebas-neue)
+   * - 'Avenir Next LT Pro' → var(--font-nunito-sans)
+   * - 'Minion Pro' → var(--font-eb-garamond)
+   * - 'American Captian' → var(--font-righteous)
+   * - 'Archistico' → var(--font-archivo)
+   * - 'Charis SIL' → var(--font-merriweather)
+   * - 'Bolton' → var(--font-playfair-display)
+   * - 'Adobe Garamond Pro' → var(--font-cormorant-garamond)
+   * - 'Khand' → var(--font-khand)
+   */
 
   /* CSS Variables */
   body {
@@ -576,11 +397,11 @@ export const GlobalStyles = createGlobalStyle`
 
   /* CRB Theme */
   .body-CRB {
-    font-family: 'Avenir Next LT Pro', sans-serif !important;
+    font-family: var(--font-nunito-sans), sans-serif !important;
   }
 
   .header-CRB {
-    font-family: 'Bebas Neue', sans-serif !important;
+    font-family: var(--font-bebas-neue), sans-serif !important;
     font-size: 1.75rem;
   }
 
@@ -606,11 +427,11 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   .body-ROT {
-    font-family: 'Adobe Garamond Pro', sans-serif !important;
+    font-family: var(--font-cormorant-garamond), sans-serif !important;
   }
 
   .header-ROT {
-    font-family: 'Bolton', sans-serif !important;
+    font-family: var(--font-playfair-display), sans-serif !important;
     font-size: 1rem;
   }
 
@@ -637,11 +458,11 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   .body-SOTB {
-    font-family: 'Avenir Next LT Pro', sans-serif !important;
+    font-family: var(--font-nunito-sans), sans-serif !important;
   }
 
   .header-SOTB {
-    font-family: 'Bebas Neue', sans-serif !important;
+    font-family: var(--font-bebas-neue), sans-serif !important;
     font-size: 1.75rem;
   }
 
@@ -672,7 +493,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   .body-KF {
-    font-family: 'Khand', sans-serif !important;
+    font-family: var(--font-khand), sans-serif !important;
   }
 
   .body-KF .attribute {
@@ -765,7 +586,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   .header-KF {
-    font-family: 'Khand', sans-serif !important;
+    font-family: var(--font-khand), sans-serif !important;
     font-size: 1.75rem;
   }
 

@@ -1,5 +1,7 @@
 export {default as Agility} from './Agility.svg';
 export {default as AvailableXp} from './AvailableXp.svg';
+export {default as BlankCharacteristic} from './BlankCharacteristic.svg';
+export {default as BlankStat} from './BlankStat.svg';
 export {default as Brawn} from './Brawn.svg';
 export {default as background} from './background.png';
 export {default as Cunning} from './Cunning.svg';
