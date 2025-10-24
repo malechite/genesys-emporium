@@ -33,11 +33,10 @@ export default function AuthCallback() {
 
     // Store the token in localStorage
     localStorage.setItem('feathers-jwt', decodedToken);
+    console.log('Token stored successfully, redirecting to emporium...');
 
-    // Redirect to the emporium page
-    setTimeout(() => {
-      router.push('/emporium');
-    }, 1000);
+    // Redirect to the emporium page immediately
+    router.push('/emporium');
   }, [searchParams, router]);
 
   if (error) {

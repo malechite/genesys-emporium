@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import client from '@/lib/feathers';
 
 export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030';
@@ -10,26 +9,17 @@ export default function Home() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('feathers-jwt');
+    const checkAuth = () => {
+      // Simply check if a token exists in localStorage
+      const token = localStorage.getItem('feathers-jwt');
 
-        if (token) {
-          // Try to authenticate with the stored token
-          await client.authenticate({
-            strategy: 'jwt',
-            accessToken: token
-          });
-
-          // If successful, redirect to emporium page
-          router.push('/emporium');
-          return;
-        }
-      } catch (error) {
-        // Token is invalid or expired, clear it
-        console.log('No valid token found, showing login');
-        localStorage.removeItem('feathers-jwt');
-      } finally {
+      if (token) {
+        // If token exists, redirect to emporium
+        // The emporium app will handle actual authentication
+        console.log('Token found, redirecting to emporium');
+        router.push('/emporium');
+      } else {
+        console.log('No token found, showing login');
         setChecking(false);
       }
     };

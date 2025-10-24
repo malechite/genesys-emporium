@@ -25,9 +25,10 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ onLogin }) => {
       // Decode token to get user info
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.userId) {
-          dispatch(changeUser(payload.userId));
-          onLogin(payload.userId);
+        const userId = payload.userId || payload.sub; // JWT standard uses 'sub' for user ID
+        if (userId) {
+          dispatch(changeUser(userId));
+          onLogin(userId);
         }
       } catch (error) {
         console.error('Error decoding token:', error);
@@ -35,21 +36,28 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ onLogin }) => {
     } else {
       // Check if we already have a token in localStorage
       const storedToken = localStorage.getItem('feathers-jwt');
+      console.log('DiscordLogin: Checking for stored token...', storedToken ? 'Found' : 'Not found');
+
       if (storedToken) {
         try {
           const payload = JSON.parse(atob(storedToken.split('.')[1]));
+          console.log('DiscordLogin: Token payload:', payload);
+
           // Check if token is still valid (not expired)
           if (payload.exp && payload.exp * 1000 > Date.now()) {
-            if (payload.userId) {
-              dispatch(changeUser(payload.userId));
-              onLogin(payload.userId);
+            const userId = payload.userId || payload.sub; // JWT standard uses 'sub' for user ID
+            console.log('DiscordLogin: Token is valid, userId:', userId);
+            if (userId) {
+              dispatch(changeUser(userId));
+              onLogin(userId);
             }
           } else {
             // Token expired, remove it
+            console.log('DiscordLogin: Token expired, removing');
             localStorage.removeItem('feathers-jwt');
           }
         } catch (error) {
-          console.error('Error reading stored token:', error);
+          console.error('DiscordLogin: Error reading stored token:', error);
           localStorage.removeItem('feathers-jwt');
         }
       }
@@ -57,9 +65,17 @@ export const DiscordLogin: React.FC<DiscordLoginProps> = ({ onLogin }) => {
   }, [dispatch, onLogin]);
 
   const handleDiscordLogin = () => {
-    // Redirect to Discord OAuth
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3030';
-    window.location.href = `${apiUrl}/oauth/discord`;
+    // Redirect to NextJS home page which handles Discord OAuth
+    // In Next.js context, redirect to root which has the login button
+    // In standalone mode, redirect directly to API
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '3000') {
+      // Running in Next.js dev mode, redirect to root
+      window.location.href = '/';
+    } else {
+      // Standalone mode or production - redirect to API
+      const apiUrl = process.env.REACT_APP_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030';
+      window.location.href = `${apiUrl}/oauth/discord`;
+    }
   };
 
   return (

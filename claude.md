@@ -30,11 +30,15 @@ genesys-emporium/
 - **Authentication**: Discord OAuth 2.0 fully functional
 - **Legacy App**: React 18 app running on port 4200 with Discord auth
 - **Dev Setup**: Turborepo orchestrating all services
+- **SCSS Migration**: All SCSS removed, migrated to styled-components
+- **TypeScript Build**: All TypeScript compilation errors resolved
+- **Component Consolidation**: Removed `/packages/ui` folder, moved components to emporium package
 
 ### 🚧 In Progress
 - **NextJS Integration**: Migrating to use NextJS as primary frontend
-  - Currently: NextJS handles auth, redirects to legacy app (port 4200)
-  - Goal: Integrate legacy app into NextJS
+  - ✅ TypeScript compilation working
+  - ⚠️ SSR runtime issues with legacy app (expected)
+  - Next: Make `/emporium` page client-side only
 
 ## 🔑 Architecture
 
@@ -103,9 +107,10 @@ DISCORD_CLIENT_SECRET=<your-client-secret>
 ## 🎯 Next Steps
 
 ### Immediate Goals
-1. **Remove Nx dependency**: Migrate legacy app away from Nx
-2. **Integrate into NextJS**: Move legacy React code into NextJS
+1. **Fix SSR Issues**: Make `/emporium` page client-side only with `'use client'`
+2. **Remove Nx dependency**: Migrate legacy app away from Nx
 3. **Simplify dev setup**: Single port, no legacy build system
+4. **Clean up SCSS remnants**: Remove `.scss.old` files once verified
 
 ### Future Enhancements
 - Real-time updates with Socket.io
@@ -113,6 +118,7 @@ DISCORD_CLIENT_SECRET=<your-client-secret>
 - Token refresh mechanism
 - Additional auth providers (GitHub, Google)
 - Package upgrades (Nx → latest, Bootstrap 4 → 5)
+- Complete migration to styled-components for all component styles
 
 ## 📊 API Endpoints
 
@@ -197,8 +203,37 @@ yarn db:reset             # Reset schema
 - ✅ Postgres database with comprehensive schema
 - ✅ One-command dev setup (`yarn dev`)
 - ✅ Complete documentation
+- ✅ SCSS completely removed from build
+- ✅ TypeScript build errors resolved
+- ✅ Component architecture simplified
+
+## 📝 Recent Migration Work (October 24, 2025)
+
+### SCSS to styled-components Migration
+- Renamed all 10 SCSS files to `.scss.old`
+- Created `GlobalStyles.tsx` with all global CSS
+- Converted component-specific styles (gear.tsx, critical.tsx)
+- Integrated styled-components into both legacy app and NextJS
+
+### TypeScript Cleanup
+Fixed **50+ TypeScript errors** including:
+- Component prop type mismatches (handleClose optional in 5 components)
+- Missing ID state in edit mode (CustomSkills, CustomVehicles, CustomTalents)
+- Data attribute conflicts (type → data-type)
+- Type conversion issues (string → number for rarity)
+- Selector type assertions (gearDice)
+- Modal callback wrapping
+- Firebase stub parameter updates
+- Promise resolver fixes
+- Redux action type assertions
+
+### Component Architecture
+- Moved `ControlButtonSet` and `DeleteButton` from UI package to emporium
+- Removed `/packages/ui` folder entirely
+- Updated all 10+ imports from `@emporium/ui` to new locations
+- Fixed path aliases in tsconfig
 
 ---
 
-**Last Updated**: October 23, 2025
-**Stack**: React 18 + FeathersJS 5 + Postgres 16 + NextJS 16
+**Last Updated**: October 24, 2025
+**Stack**: React 18 + FeathersJS 5 + Postgres 16 + NextJS 16 + styled-components
