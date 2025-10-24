@@ -10,7 +10,7 @@ interface MotivationBlockProps {
 }
 
 export const MotivationBlock = ({ type }: MotivationBlockProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const masterMotivations = useSelector((state: any) => state.masterMotivations);
     const motivations = useSelector((state: any) => state.motivations);
 

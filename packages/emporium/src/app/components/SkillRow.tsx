@@ -10,7 +10,7 @@ interface SkillRowProps {
 }
 
 export const SkillRow = ({ skillKey }: SkillRowProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetype = useSelector((state: any) => state.archetype);
     const masterSkills = useSelector((state: any) => state.masterSkills);
     const skills = useSelector((state: any) => state.skills);

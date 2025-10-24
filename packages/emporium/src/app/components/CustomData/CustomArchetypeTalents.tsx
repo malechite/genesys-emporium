@@ -22,7 +22,7 @@ const initialState = {
 };
 
 export const CustomArchetypeTalents = ({ handleClose }: CustomArchetypeTalentsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customArchetypeTalents = useSelector((state: any) => state.customArchetypeTalents);
     const skills = useSelector((state: any) => state.skills);
 

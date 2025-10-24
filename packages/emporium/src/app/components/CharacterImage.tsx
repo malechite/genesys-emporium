@@ -7,7 +7,7 @@ import { Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, Row } from '
 interface CharacterImageProps {}
 
 export const CharacterImage = ({}: CharacterImageProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const description = useSelector((state: any) => state.description);
     const theme = useSelector((state: any) => state.theme);
 

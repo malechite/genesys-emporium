@@ -8,7 +8,7 @@ import { Input, Row } from 'reactstrap';
 interface AttributesProps {}
 
 export const Attributes = ({}: AttributesProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const woundThreshold = useSelector((state: any) => selectors.woundThreshold(state));
     const strainThreshold = useSelector((state: any) => selectors.strainThreshold(state));
     const totalSoak = useSelector((state: any) => selectors.totalSoak(state));
@@ -49,7 +49,7 @@ export const Attributes = ({}: AttributesProps) => {
                             type="number"
                             bsSize="sm"
                             name="currentWound"
-                            maxLength="2"
+                            maxLength={2}
                             className="attributeInput ml-2"
                             onChange={event =>
                                 setCurrentWound(+event.target.value)
@@ -72,7 +72,7 @@ export const Attributes = ({}: AttributesProps) => {
                         <Input
                             type="number"
                             name="currentStrain"
-                            maxLength="2"
+                            maxLength={2}
                             bsSize="sm"
                             className="attributeInput ml-2"
                             onChange={event =>

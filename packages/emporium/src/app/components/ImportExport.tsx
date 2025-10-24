@@ -23,7 +23,7 @@ import { db } from '../firestoreDB';
 interface ImportExportProps {}
 
 export const ImportExport = ({}: ImportExportProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
 
     // Redux state
     const characterList = useSelector((state: any) => state.characterList);

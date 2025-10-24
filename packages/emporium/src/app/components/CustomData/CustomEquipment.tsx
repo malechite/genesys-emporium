@@ -36,7 +36,7 @@ const initialState = {
 };
 
 export const CustomEquipment = ({ type, handleClose }: CustomEquipmentProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const skills = useSelector((state: any) => state.skills);
     const qualities = useSelector((state: any) => state.qualities);
     const customWeapons = useSelector((state: any) => state.customWeapons);

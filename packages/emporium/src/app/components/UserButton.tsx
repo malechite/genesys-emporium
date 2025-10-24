@@ -7,7 +7,7 @@ import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown 
 interface UserButtonProps {}
 
 export const UserButton = ({}: UserButtonProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const user = useSelector((state: any) => state.user);
     const [username, setUsername] = useState<string>('User');
 

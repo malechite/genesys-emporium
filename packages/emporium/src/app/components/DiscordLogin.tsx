@@ -8,7 +8,7 @@ interface DiscordLoginProps {
 }
 
 export const DiscordLogin: React.FC<DiscordLoginProps> = ({ onLogin }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch() as any;
 
   useEffect(() => {
     // Check if we have a token in the URL (from OAuth callback)

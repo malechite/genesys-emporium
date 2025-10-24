@@ -10,7 +10,7 @@ interface CustomVehiclesProps {
 }
 
 export const CustomVehicles = ({ handleClose }: CustomVehiclesProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customVehicles = useSelector((state: any) => state.customVehicles);
     const skills = useSelector((state: any) => state.skills);
 

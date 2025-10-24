@@ -12,7 +12,7 @@ interface CharacteristicsProps {
 }
 
 export const Characteristics = ({ modal, handleClose }: CharacteristicsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetype = useSelector((state: any) => state.archetype);
     const archetypes = useSelector((state: any) => state.archetypes);
     const creationCharacteristics = useSelector((state: any) => state.creationCharacteristics);

@@ -17,7 +17,7 @@ import { ModalDeleteConfirm } from './ModalDeleteConfirm';
 interface CharacterSelectProps {}
 
 export const CharacterSelect = ({}: CharacterSelectProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetype = useSelector((state: any) => state.archetype);
     const archetypes = useSelector((state: any) => state.archetypes);
     const career = useSelector((state: any) => state.career);
@@ -127,7 +127,7 @@ export const CharacterSelect = ({}: CharacterSelectProps) => {
                         type="text"
                         bsSize="sm"
                         value={name ? name : ''}
-                        maxLength="50"
+                        maxLength={50}
                         name="name"
                         onChange={handleChange}
                         onBlur={() => dispatch(changeCharacterName(name))}
@@ -209,7 +209,7 @@ export const CharacterSelect = ({}: CharacterSelectProps) => {
                         type="text"
                         bsSize="sm"
                         value={playerName}
-                        maxLength="25"
+                        maxLength={25}
                         name="playerName"
                         onChange={handleChange}
                         onBlur={handleBlur}
@@ -227,7 +227,7 @@ export const CharacterSelect = ({}: CharacterSelectProps) => {
             />
             <ModalDeleteConfirm
                 deleteModal={deleteModal}
-                confirmedDelete={confirmedDelete}
+                confirmedDelete={() => confirmedDelete({} as React.MouseEvent)}
                 handleClose={() => setDeleteModal(false)}
                 type="Character"
             />

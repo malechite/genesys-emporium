@@ -9,7 +9,7 @@ interface XPPopupProps {
 }
 
 export const XPPopup = ({ modal, handleClose }: XPPopupProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const earnedXPFromState = useSelector((state: any) => state.earnedXP);
     const theme = useSelector((state: any) => state.theme);
     const [earnedXP, setEarnedXP] = useState(earnedXPFromState);

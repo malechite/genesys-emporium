@@ -34,7 +34,7 @@ const initialState = {
 };
 
 export const CustomArchetypes = ({ handleClose }: CustomArchetypesProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customArchetypes = useSelector(
         (state: any) => state.customArchetypes
     );

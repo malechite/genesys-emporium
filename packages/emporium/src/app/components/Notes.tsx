@@ -4,7 +4,7 @@ import { Input, Row } from 'reactstrap';
 import { changeData } from '@emporium/actions';
 
 export const Notes = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const description = useSelector((state: any) => state.description);
     const theme = useSelector((state: any) => state.theme);
     const [notes, setNotes] = useState(description.notes);
@@ -24,7 +24,7 @@ export const Notes = () => {
                     type="textarea"
                     className="w-100"
                     rows="31"
-                    maxLength="5000"
+                    maxLength={5000}
                     value={notes}
                 />
             </Row>

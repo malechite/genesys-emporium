@@ -5775,6 +5775,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-tabs@npm:^5.0.5":
+  version: 5.0.5
+  resolution: "@types/react-tabs@npm:5.0.5"
+  dependencies:
+    react-tabs: "*"
+  checksum: 30af1eb8de0270d948c779e9776df96e9fc880da60092ebf51c216751775661a04374674fd3ddc01abea97dc0f5eba0e0e5acd0370e19cce6452eed873e9649f
+  languageName: node
+  linkType: hard
+
 "@types/react@npm:*, @types/react@npm:>=16.9.11, @types/react@npm:^19":
   version: 19.2.2
   resolution: "@types/react@npm:19.2.2"
@@ -9282,6 +9291,13 @@ __metadata:
   version: 1.2.1
   resolution: "clsx@npm:1.2.1"
   checksum: 30befca8019b2eb7dbad38cff6266cf543091dae2825c856a62a8ccf2c3ab9c2907c4d12b288b73101196767f66812365400a227581484a05f968b0307cfaf12
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^2.0.0":
+  version: 2.1.1
+  resolution: "clsx@npm:2.1.1"
+  checksum: acd3e1ab9d8a433ecb3cc2f6a05ab95fe50b4a3cfc5ba47abb6cbf3754585fcb87b84e90c822a1f256c4198e3b41c7f6c391577ffc8678ad587fc0976b24fd57
   languageName: node
   linkType: hard
 
@@ -13654,6 +13670,7 @@ __metadata:
     "@types/react": ^18.3.3
     "@types/react-dom": ^18.3.0
     "@types/react-router-dom": ^5.3.3
+    "@types/react-tabs": ^5.0.5
     "@types/styled-components": ^5.1.35
     "@typescript-eslint/eslint-plugin": 2.19.2
     "@typescript-eslint/parser": 2.19.2
@@ -22663,6 +22680,18 @@ __metadata:
   bin:
     react-scripts: bin/react-scripts.js
   checksum: 92afa2f245c7092ccc97d5609dc7a2130616262e34da7f15072d9442e2d2e1d4909a91022abd1faac1336eb17c5525a10d9bd43e1ae374c7ec941ca20addca68
+  languageName: node
+  linkType: hard
+
+"react-tabs@npm:*":
+  version: 6.1.0
+  resolution: "react-tabs@npm:6.1.0"
+  dependencies:
+    clsx: ^2.0.0
+    prop-types: ^15.5.0
+  peerDependencies:
+    react: ^18.0.0 || ^19.0.0
+  checksum: 6b0379002106feeba4456d38948135b60a7c880a1dfbd67dc2c9660cf7e2c1d355c1a3050418eba65f74fb3e6ead34967aa7f216356537e6c8f3265793028341
   languageName: node
   linkType: hard
 

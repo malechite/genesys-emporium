@@ -11,7 +11,7 @@ interface ArchetypeProps {
 }
 
 export const Archetype = ({ modal, handleClose }: ArchetypeProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetypes = useSelector((state: any) => state.archetypes);
     const archetype = useSelector((state: any) => state.archetype);
     const misc = useSelector((state: any) => state.misc);

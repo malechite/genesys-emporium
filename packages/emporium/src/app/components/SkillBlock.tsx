@@ -9,7 +9,7 @@ interface SkillBlockProps {
 }
 
 export const SkillBlock = ({ type }: SkillBlockProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const [modal, setModal] = useState(false);
     const skills = useSelector((state: any) => state.skills);
     const masterSkills = useSelector((state: any) => state.masterSkills);

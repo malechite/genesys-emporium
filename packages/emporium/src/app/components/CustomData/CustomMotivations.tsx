@@ -17,7 +17,7 @@ const initialState = {
 };
 
 export const CustomMotivations = ({ handleClose }: CustomMotivationsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customMotivations = useSelector((state: any) => state.customMotivations);
 
     const [state, setState] = useState<any>(initialState);

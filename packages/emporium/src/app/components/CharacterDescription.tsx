@@ -7,7 +7,7 @@ import { Col, Input, Label, Row } from 'reactstrap';
 interface CharacterDescriptionProps {}
 
 export const CharacterDescription = ({}: CharacterDescriptionProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const description = useSelector((state: any) => state.description);
     const theme = useSelector((state: any) => state.theme);
 
@@ -77,7 +77,7 @@ export const CharacterDescription = ({}: CharacterDescriptionProps) => {
                             <Input
                                 value={stateMap[aspect]}
                                 id={aspect}
-                                maxLength="25"
+                                maxLength={25}
                                 bsSize="sm"
                                 name={aspect}
                                 onBlur={handleBlur}
@@ -101,7 +101,7 @@ export const CharacterDescription = ({}: CharacterDescriptionProps) => {
                         type="textarea"
                         rows="12"
                         className="w-100 my-auto"
-                        maxLength="1000"
+                        maxLength={1000}
                         name="features"
                         id="features"
                         value={features}

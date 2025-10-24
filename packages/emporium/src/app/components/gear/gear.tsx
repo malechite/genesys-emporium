@@ -35,7 +35,7 @@ export const Gear = ({ type, modal, handleClose }: GearProps) => {
     const equipmentWeapons = useSelector((state: any) => state.equipmentWeapons);
     const theme = useSelector((state: any) => state.theme);
     const setting = useSelector((state: any) => state.setting);
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
 
     const currentEquipment = useSelector((state: any) => state[type]);
 

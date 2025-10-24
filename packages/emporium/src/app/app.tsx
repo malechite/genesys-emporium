@@ -14,7 +14,7 @@ import { CustomData } from './components/CustomData';
 declare const window: any;
 
 export const App = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const [loading, setLoading] = useState(true);
 
     const user = useSelector((state: any) => state.user);

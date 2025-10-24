@@ -6,7 +6,7 @@
         "sourceType": "module",
         "project": "./tsconfig.json"
     },
-    "ignorePatterns": ["**/*"],
+    "ignorePatterns": ["node_modules", "dist", "build", ".next", ".turbo", "coverage"],
     "plugins": ["@typescript-eslint", "@nrwl/nx"],
     "extends": [
         "eslint:recommended",

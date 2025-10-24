@@ -12,7 +12,7 @@ interface CareerProps {
 }
 
 export const Career = ({ modal, handleClose }: CareerProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetype = useSelector((state: any) => state.archetype);
     const archetypes = useSelector((state: any) => state.archetypes);
     const career = useSelector((state: any) => state.career);
@@ -148,7 +148,6 @@ export const Career = ({ modal, handleClose }: CareerProps) => {
                                 </Label>
                                 <Col sm="auto">
                                     <Description
-                                        id="book"
                                         text={`${masterCareer.book}: ${masterCareer.page}`}
                                     />
                                 </Col>
@@ -160,7 +159,6 @@ export const Career = ({ modal, handleClose }: CareerProps) => {
                             </Label>
                             <Col sm="auto">
                                 <Description
-                                    id="desc"
                                     text={masterCareer.description}
                                 />
                             </Col>

@@ -11,7 +11,7 @@ interface CustomTalentsProps {
 }
 
 export const CustomTalents = ({ handleClose }: CustomTalentsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customTalents = useSelector((state: any) => state.customTalents);
     const talents = useSelector((state: any) => state.talents);
     const skills = useSelector((state: any) => state.skills);

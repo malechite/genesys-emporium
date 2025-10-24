@@ -14,7 +14,7 @@ export const Critical = ({}: CriticalProps) => {
 
     const critical = useSelector((state: any) => state.critical);
     const theme = useSelector((state: any) => state.theme);
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
 
     const handleSubmit = useCallback((event: React.FormEvent) => {
         const newArr = [...critical];

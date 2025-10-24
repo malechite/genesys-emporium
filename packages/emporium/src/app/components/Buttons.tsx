@@ -6,7 +6,7 @@ import { UserButton } from './UserButton';
 import { PrintLayout } from './printLayout';
 
 export const Buttons = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const theme = useSelector((state: any) => state.theme);
     const themes = useSelector((state: any) => state.themes);
 

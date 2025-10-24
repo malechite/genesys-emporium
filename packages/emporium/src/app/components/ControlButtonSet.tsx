@@ -9,12 +9,12 @@ export const ControlButtonSet = ({
     onEditCancel,
     disabled
 }: {
-  mode: string;
-  type: string;
-  handleSubmit?: any;
-  onEditSubmit?: any;
-  onEditCancel?: any;
-  disabled?: boolean;
+    mode: string;
+    type: string;
+    handleSubmit?: any;
+    onEditSubmit?: any;
+    onEditCancel?: any;
+    disabled?: boolean;
 }) => {
     switch (mode) {
         case 'add':
@@ -22,7 +22,10 @@ export const ControlButtonSet = ({
                 <Row className="justify-content-end my-1">
                     <ButtonGroup>
                         <Button onClick={onEditCancel}>Clear</Button>
-                        <Button onClick={handleSubmit} disabled={disabled || false}>
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={disabled || false}
+                        >
                             Add {type}
                         </Button>
                     </ButtonGroup>

@@ -18,7 +18,7 @@ interface TalentSelectionProps {
 }
 
 export const TalentSelection = ({ talentKey, row, tier, modal, handleClose }: TalentSelectionProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const masterTalents = useSelector((state: any) => state.masterTalents);
     const talentCountValue = useSelector((state: any) => talentCount(state));
     const talents = useSelector((state: any) => state.talents);

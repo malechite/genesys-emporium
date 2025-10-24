@@ -10,7 +10,7 @@ interface ArchetypeSkillsProps {
 }
 
 export const ArchetypeSkills = ({ id }: ArchetypeSkillsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetype = useSelector((state: any) => state.archetype);
     const archetypes = useSelector((state: any) => state.archetypes);
     const archetypeSpecialSkills = useSelector((state: any) => state.archetypeSpecialSkills);

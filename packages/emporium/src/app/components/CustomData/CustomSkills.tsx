@@ -11,7 +11,7 @@ interface CustomSkillsProps {
 }
 
 export const CustomSkills = ({ handleClose }: CustomSkillsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customSkills = useSelector((state: any) => state.customSkills);
     const [name, setName] = useState('');
     const [type, setType] = useState('');

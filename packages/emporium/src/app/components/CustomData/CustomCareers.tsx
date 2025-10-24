@@ -19,7 +19,7 @@ const initialState = {
 };
 
 export const CustomCareers = ({ handleClose }: CustomCareersProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const customCareers = useSelector((state: any) => state.customCareers);
     const skills = useSelector((state: any) => state.skills);
 

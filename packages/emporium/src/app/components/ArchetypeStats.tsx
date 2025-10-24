@@ -11,7 +11,7 @@ import { Description } from './Description';
 interface ArchetypeStatsProps {}
 
 export const ArchetypeStats = ({}: ArchetypeStatsProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const archetype = useSelector((state: any) => state.archetype);
     const archetypes = useSelector((state: any) => state.archetypes);
     const archetypeTalents = useSelector((state: any) => state.archetypeTalents);

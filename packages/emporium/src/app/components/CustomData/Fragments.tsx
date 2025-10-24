@@ -69,7 +69,7 @@ export const Fragment = ({
                         type="text"
                         bsSize="sm"
                         value={value}
-                        maxLength="50"
+                        maxLength={50}
                         onChange={handleChange}
                         disabled={mode === 'edit'}
                     />
@@ -80,7 +80,7 @@ export const Fragment = ({
                         type="text"
                         bsSize="sm"
                         value={value}
-                        maxLength="50"
+                        maxLength={50}
                         onChange={handleChange}
                     />
                 );
@@ -90,7 +90,7 @@ export const Fragment = ({
                         type="number"
                         bsSize="sm"
                         value={value}
-                        maxLength="7"
+                        maxLength={7}
                         onChange={handleChange}
                     />
                 );
@@ -134,7 +134,7 @@ export const Fragment = ({
                         type="textarea"
                         name="description"
                         rows="8"
-                        maxLength="1000"
+                        maxLength={1000}
                         className="w-100"
                         value={value}
                     />

@@ -21,7 +21,7 @@ import { Gear } from './gear/gear';
 interface EquipmentProps {}
 
 export const Equipment = ({}: EquipmentProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
 
     // Redux state
     const armor = useSelector((state: any) => state.armor);

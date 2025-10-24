@@ -16,7 +16,7 @@ import { ModalDeleteConfirm } from './ModalDeleteConfirm';
 interface VehicleSelectProps {}
 
 export const VehicleSelect = ({}: VehicleSelectProps) => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
 
     // Redux state
     const user = useSelector((state: any) => state.user);
@@ -167,7 +167,7 @@ export const VehicleSelect = ({}: VehicleSelectProps) => {
                         bsSize="sm"
                         disabled={!vehicle || !writeAccess}
                         value={name ? name : ''}
-                        maxLength="50"
+                        maxLength={50}
                         onChange={handleChange}
                         onBlur={() =>
                             dispatch(changeFieldData(
@@ -237,7 +237,7 @@ export const VehicleSelect = ({}: VehicleSelectProps) => {
                         bsSize="sm"
                         name={type}
                         id={`number${type}`}
-                        maxLength="2"
+                        maxLength={2}
                         disabled={!vehicle || !writeAccess}
                         className={`vehicleStat vehicleStat-${type} px-1 pt-1`}
                         onChange={handleChange}
@@ -286,7 +286,7 @@ export const VehicleSelect = ({}: VehicleSelectProps) => {
                         type="textarea"
                         rows="12"
                         className="w-100 my-auto"
-                        maxLength="1000"
+                        maxLength={1000}
                         name="vehicleNotes"
                         disabled={!vehicle || !writeAccess}
                         id="text"
